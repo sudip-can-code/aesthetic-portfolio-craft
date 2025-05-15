@@ -15,11 +15,11 @@ const About = () => {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="flex justify-center">
-            <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden">
+            <div className="w-64 h-64 md:w-80 md:h-80 overflow-hidden">
               <img 
-                src="/placeholder.svg" 
+                src="/lovable-uploads/1021feb9-789c-49b6-8094-424f26c9afb3.png" 
                 alt="About Me Portrait" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
             </div>
           </div>

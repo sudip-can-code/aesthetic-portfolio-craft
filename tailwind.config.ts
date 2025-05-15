@@ -112,7 +112,7 @@ export default {
 				'fade-up': 'fade-up 0.7s ease-out'
 			},
 			fontFamily: {
-				'sans': ['Inter', 'sans-serif'],
+				'sans': ['Poppins', 'sans-serif'],
 			}
 		}
 	},
