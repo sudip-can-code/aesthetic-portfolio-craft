@@ -40,9 +40,9 @@ const Hero = () => {
           <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
             <div className="w-64 h-64 md:w-80 md:h-80 overflow-hidden">
               <img 
-                src="/lovable-uploads/1021feb9-789c-49b6-8094-424f26c9afb3.png" 
+                src="/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png" 
                 alt="Portfolio Portrait" 
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-center grayscale"
               />
             </div>
           </div>

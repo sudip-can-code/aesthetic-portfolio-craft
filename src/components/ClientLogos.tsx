@@ -2,12 +2,12 @@
 import { Card } from "@/components/ui/card";
 
 const CLIENT_LOGOS = [
-  { id: 1, name: "Client 1", logo: "/placeholder.svg" },
-  { id: 2, name: "Client 2", logo: "/placeholder.svg" },
-  { id: 3, name: "Client 3", logo: "/placeholder.svg" },
-  { id: 4, name: "Client 4", logo: "/placeholder.svg" },
-  { id: 5, name: "Client 5", logo: "/placeholder.svg" },
-  { id: 6, name: "Client 6", logo: "/placeholder.svg" },
+  { id: 1, name: "Nepal Media", logo: "/placeholder.svg" },
+  { id: 2, name: "Kathmandu Productions", logo: "/placeholder.svg" },
+  { id: 3, name: "Himalayan Films", logo: "/placeholder.svg" },
+  { id: 4, name: "Everest Studios", logo: "/placeholder.svg" },
+  { id: 5, name: "Sagarmatha Digital", logo: "/placeholder.svg" },
+  { id: 6, name: "Annapurna Creations", logo: "/placeholder.svg" },
 ];
 
 const ClientLogos = () => {
