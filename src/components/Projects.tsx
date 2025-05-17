@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type Project = {
   id: number;
@@ -19,9 +19,42 @@ const PROJECTS: Project[] = [
 
 const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'WEDDING', 'MUSIC', 'COMMERCIAL', 'EVENT', 'SHORT'];
 
-const ProjectCard = ({ project }: { project: Project }) => {
+const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            setIsVisible(true);
+          }, index * 150); // Staggered animation
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+    
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, [index]);
+  
   return (
-    <div className="project-card bg-secondary/20 aspect-video">
+    <div 
+      ref={cardRef}
+      className={`project-card bg-secondary/20 aspect-video transition-all duration-700 ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-10'
+      }`}
+    >
       <div className="absolute inset-0">
         <img
           src={project.image}
@@ -41,22 +74,54 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
 const Projects = () => {
   const [activeCategory, setActiveCategory] = useState('ALL');
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const filteredProjects = activeCategory === 'ALL' 
     ? PROJECTS 
     : PROJECTS.filter(project => project.category === activeCategory);
 
   return (
-    <section id="projects" className="section bg-background">
+    <section id="projects" ref={sectionRef} className="section bg-background">
       <div className="container mx-auto">
+        <div className={`mb-12 text-center transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <h2 className="text-3xl font-bold relative inline-block">
+            Projects
+            <span className="absolute -bottom-2 left-0 w-full h-1 bg-primary scale-x-100 origin-left transition-transform"></span>
+          </h2>
+        </div>
+        
         <div className="grid grid-cols-1 gap-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {filteredProjects.map(project => (
-              <ProjectCard key={project.id} project={project} />
+            {filteredProjects.map((project, index) => (
+              <ProjectCard key={project.id} project={project} index={index} />
             ))}
           </div>
 
-          <div className="flex justify-center flex-wrap gap-x-6 gap-y-2">
+          <div className={`flex justify-center flex-wrap gap-x-6 gap-y-2 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}>
             {CATEGORIES.map((category) => (
               <button
                 key={category}
@@ -65,9 +130,12 @@ const Projects = () => {
                   activeCategory === category
                     ? 'font-semibold text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                } relative group`}
               >
                 {category}
+                <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-primary transform ${
+                  activeCategory === category ? 'scale-x-100' : 'scale-x-0'
+                } group-hover:scale-x-100 transition-transform duration-300 origin-left`}></span>
               </button>
             ))}
           </div>

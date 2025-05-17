@@ -1,11 +1,10 @@
-
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const CLIENT_LOGOS = [
-  { id: 1, name: "Google", logo: "/placeholder.svg" },
+  { id: 1, name: "Adobe", logo: "/placeholder.svg" },
   { id: 2, name: "Microsoft", logo: "/placeholder.svg" },
   { id: 3, name: "Apple", logo: "/placeholder.svg" },
-  { id: 4, name: "Amazon", logo: "/placeholder.svg" },
+  { id: 4, name: "Google", logo: "/placeholder.svg" },
   { id: 5, name: "Meta", logo: "/placeholder.svg" },
   { id: 6, name: "Netflix", logo: "/placeholder.svg" },
   { id: 7, name: "IBM", logo: "/placeholder.svg" },
@@ -16,6 +15,29 @@ const CLIENT_LOGOS = [
 
 const ClientLogos = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
   
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -48,11 +70,15 @@ const ClientLogos = () => {
   }, []);
 
   return (
-    <section className="py-16 bg-secondary/20 overflow-hidden">
+    <section ref={sectionRef} className="py-16 bg-secondary/20 overflow-hidden">
       <div className="container mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Worked with</h2>
+        <h2 className={`text-2xl md:text-3xl font-bold text-center mb-12 transition-all duration-700 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}>Worked with</h2>
         
-        <div className="relative w-full">
+        <div className={`relative w-full transition-all duration-700 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}>
           <div className="flex overflow-hidden">
             <div 
               ref={scrollRef}
