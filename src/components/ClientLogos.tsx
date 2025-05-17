@@ -14,7 +14,7 @@ const ClientLogos = () => {
   return (
     <section className="py-16 bg-secondary/20">
       <div className="container mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Trusted by Clients</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Worked with</h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {CLIENT_LOGOS.map((client) => (
