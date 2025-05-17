@@ -22,29 +22,27 @@ const Hero = () => {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center pt-16">
       <div className="container mx-auto flex flex-col items-center">
-        <div className="mb-16 text-center">
+        <div className={`relative animate-fade-in delay-300 duration-1000 mb-8 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="w-80 h-80 md:w-[400px] md:h-[400px] overflow-hidden rounded-full">
+            <img 
+              src="/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png" 
+              alt="Portfolio Portrait" 
+              className="w-full h-full object-cover object-center grayscale"
+            />
+          </div>
+        </div>
+        
+        <div className="mb-12 text-center">
           <p className="text-lg mb-2">Hi, I'M</p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Your Name</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">Sudeep</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center w-full max-w-5xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full max-w-3xl">
           <div className={`space-y-4 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0 translate-y-10'}`}>
             <div className="mb-6">
               <p className="text-xs uppercase tracking-wider font-semibold mb-1">Project Experience</p>
               <p className="text-sm">VIDEO EDITING</p>
               <p className="text-sm">GRAPHICS DESIGNER</p>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="w-72 h-72 md:w-96 md:h-96 overflow-hidden rounded-full">
-                <img 
-                  src="/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png" 
-                  alt="Portfolio Portrait" 
-                  className="w-full h-full object-cover object-center grayscale"
-                />
-              </div>
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Github, Linkedin, Instagram } from "lucide-react";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Email</p>
-                  <p className="text-sm">youremail@example.com</p>
+                  <p className="text-sm">sudeepsnwr8@gmail.com</p>
                 </div>
               </div>
 
@@ -69,7 +70,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Phone</p>
-                  <p className="text-sm">+1 (123) 456-7890</p>
+                  <p className="text-sm">9840401157</p>
                 </div>
               </div>
 
@@ -81,7 +82,26 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Location</p>
-                  <p className="text-sm">City, Country</p>
+                  <p className="text-sm">Kathmandu, Nepal</p>
+                </div>
+              </div>
+
+              <div className="pt-6">
+                <h4 className="text-base font-semibold mb-3">Connect with me</h4>
+                <div className="flex space-x-4">
+                  <a href="https://github.com/sudip-can-code" target="_blank" rel="noopener noreferrer" 
+                     className="bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition-colors">
+                    <Github size={20} />
+                  </a>
+                  <a href="https://www.linkedin.com/feed/" target="_blank" rel="noopener noreferrer"
+                     className="bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition-colors">
+                    <Linkedin size={20} />
+                  </a>
+                  <a href="https://www.instagram.com/mr_jijicha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
+                     target="_blank" rel="noopener noreferrer"
+                     className="bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition-colors">
+                    <Instagram size={20} />
+                  </a>
                 </div>
               </div>
             </div>
