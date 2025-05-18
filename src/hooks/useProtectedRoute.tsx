@@ -9,9 +9,12 @@ export const useProtectedRoute = (adminOnly = false) => {
 
   useEffect(() => {
     if (!isLoading) {
+      console.log('Protected route check:', { user, isAdmin, adminOnly });
       if (!user) {
+        console.log('No user, redirecting to auth page');
         navigate('/auth');
       } else if (adminOnly && !isAdmin) {
+        console.log('User is not admin, redirecting to home page');
         navigate('/');
       }
     }
