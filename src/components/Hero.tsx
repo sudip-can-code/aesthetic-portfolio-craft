@@ -33,8 +33,8 @@ const Hero = () => {
           </div>
 
           {/* Profile Picture - Center */}
-          <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="w-[350px] h-[350px] md:w-[450px] md:h-[450px] overflow-hidden rounded-full mx-auto">
+          <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'} flex justify-center`}>
+            <div className="w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto">
               <img 
                 src="/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png" 
                 alt="Portfolio Portrait" 
@@ -52,10 +52,9 @@ const Hero = () => {
           </div>
         </div>
         
-        {/* Name directly below profile picture */}
-        <div className="mb-12 text-center -mt-2">
-          <p className="text-lg mb-1">Hi, I'M</p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Sudip</h1>
+        {/* Name directly below profile picture - touching it */}
+        <div className="text-center -mt-6">
+          <h1 className="text-4xl md:text-5xl font-bold">Hi, I'm Sudip</h1>
         </div>
         
         <div className="mt-8 animate-fade-up">
