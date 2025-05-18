@@ -1,15 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
-import { LogIn, User } from "lucide-react";
 
 const Navbar = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [scrolled, setScrolled] = useState(false);
-  const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,29 +94,7 @@ const Navbar = () => {
             </li>
           </ul>
         </nav>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              {isAdmin && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/admin">
-                    <User className="mr-2 h-4 w-4" />
-                    Admin
-                  </Link>
-                </Button>
-              )}
-              <Button variant="outline" size="sm" onClick={signOut}>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/auth">
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Link>
-            </Button>
-          )}
+        <div className="flex items-center">
           <ThemeToggle />
         </div>
       </div>

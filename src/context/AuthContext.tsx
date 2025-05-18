@@ -101,7 +101,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       console.log('Sign in successful for:', email);
-      sonnerToast.success('Welcome back!', 'You\'ve successfully signed in.');
+      sonnerToast.success('Welcome back!', {
+        description: 'You\'ve successfully signed in.'
+      });
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -132,7 +134,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       console.log('Sign up successful for:', email);
-      sonnerToast.success('Registration successful', 'Your account has been created. You can now sign in.');
+      sonnerToast.success('Registration successful', {
+        description: 'Your account has been created. You can now sign in.'
+      });
     } catch (error) {
       console.error('Error signing up:', error);
       throw error;
@@ -142,7 +146,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      sonnerToast.success('Signed out', 'You\'ve been successfully signed out.');
+      sonnerToast.success('Signed out', {
+        description: 'You\'ve been successfully signed out.'
+      });
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
