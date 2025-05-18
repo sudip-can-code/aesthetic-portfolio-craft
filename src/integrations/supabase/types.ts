@@ -9,7 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      client_logos: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+          is_admin: boolean | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+          is_admin?: boolean | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id: string
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          company: string
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          position: string
+          text: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          position: string
+          text: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          position?: string
+          text?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

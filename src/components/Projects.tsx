@@ -1,21 +1,13 @@
 
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 type Project = {
-  id: number;
+  id: string;
   category: string;
-  image: string;
+  image_url: string;
   title: string;
 };
-
-const PROJECTS: Project[] = [
-  { id: 1, category: 'CORPORATE', image: '/placeholder.svg', title: 'Corporate Project 1' },
-  { id: 2, category: 'DOCUMENTARY', image: '/placeholder.svg', title: 'Documentary 1' },
-  { id: 3, category: 'WEDDING', image: '/placeholder.svg', title: 'Wedding Video 1' },
-  { id: 4, category: 'MUSIC', image: '/placeholder.svg', title: 'Music Video 1' },
-  { id: 5, category: 'COMMERCIAL', image: '/placeholder.svg', title: 'Commercial 1' },
-  { id: 6, category: 'EVENT', image: '/placeholder.svg', title: 'Event Coverage 1' },
-];
 
 const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'WEDDING', 'MUSIC', 'COMMERCIAL', 'EVENT', 'SHORT'];
 
@@ -57,7 +49,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
     >
       <div className="absolute inset-0">
         <img
-          src={project.image}
+          src={project.image_url || '/placeholder.svg'}
           alt={project.title}
           className="w-full h-full object-cover"
         />
@@ -76,8 +68,12 @@ const Projects = () => {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    fetchProjects();
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -97,10 +93,29 @@ const Projects = () => {
       }
     };
   }, []);
+  
+  async function fetchProjects() {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        throw error;
+      }
+      
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredProjects = activeCategory === 'ALL' 
-    ? PROJECTS 
-    : PROJECTS.filter(project => project.category === activeCategory);
+    ? projects 
+    : projects.filter(project => project.category === activeCategory);
 
   return (
     <section id="projects" ref={sectionRef} className="section bg-background">
@@ -113,11 +128,21 @@ const Projects = () => {
         </div>
         
         <div className="grid grid-cols-1 gap-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard key={project.id} project={project} index={index} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-32">
+              <p>Loading projects...</p>
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="flex justify-center items-center h-32">
+              <p className="text-muted-foreground">No projects found.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {filteredProjects.map((project, index) => (
+                <ProjectCard key={project.id} project={project} index={index} />
+              ))}
+            </div>
+          )}
 
           <div className={`flex justify-center flex-wrap gap-x-6 gap-y-2 transition-all duration-700 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
