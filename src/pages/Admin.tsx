@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,7 @@ import ClientLogosTab from '@/components/admin/ClientLogosTab';
 import ProfileTab from '@/components/admin/ProfileTab';
 
 const Admin = () => {
-  const { isLoading, isAdmin } = useProtectedRoute(true);
+  const { isLoading, isAdmin } = useProtectedRoute();
   const [activeTab, setActiveTab] = useState('projects');
   const { signOut } = useAuth();
   
