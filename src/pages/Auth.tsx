@@ -43,10 +43,10 @@ const Auth = () => {
       setIsSubmitting(true);
       await signIn(data.email, data.password);
       // Navigation happens in useEffect when user state changes
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
       toast.error('Failed to sign in', {
-        description: 'Please check your credentials and try again.'
+        description: error.message || 'Please check your credentials and try again.'
       });
     } finally {
       setIsSubmitting(false);

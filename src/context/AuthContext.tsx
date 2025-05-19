@@ -24,8 +24,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const setupAuth = async () => {
       try {
+        setIsLoading(true);
+        
         // First check for existing session
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          return;
+        }
         
         if (currentSession?.user) {
           setSession(currentSession);
@@ -46,11 +53,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log('Auth state changed:', event, currentSession?.user?.email);
+        
+        // Update state synchronously first
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
+        // Then check admin status if needed
         if (currentSession?.user) {
-          await checkUserAdmin(currentSession.user.id);
+          // Use setTimeout to prevent deadlocks
+          setTimeout(() => {
+            checkUserAdmin(currentSession.user.id);
+          }, 0);
         } else {
           setIsAdmin(false);
         }
@@ -103,18 +116,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        console.error('Sign in error:', error.message);
-        sonnerToast.error('Authentication error', {
-          description: error.message || 'Failed to sign in'
-        });
-        return;
+        throw error;
       }
 
       if (!data.user) {
-        sonnerToast.error('Authentication error', {
-          description: 'No user found'
-        });
-        return;
+        throw new Error('No user found');
       }
 
       // Check if the user is an admin
@@ -126,30 +132,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (profileError) {
         console.error('Error checking admin status:', profileError);
-        sonnerToast.error('Error', {
-          description: 'Could not verify admin permissions'
-        });
-        return;
+        throw new Error('Could not verify admin permissions');
       }
 
       if (!profileData?.is_admin) {
         // Sign out if not admin
         await supabase.auth.signOut();
-        sonnerToast.error('Access denied', {
-          description: 'Only administrators can access this site.'
-        });
-        return;
+        throw new Error('Only administrators can access this site.');
       }
 
       sonnerToast.success('Welcome back!', {
         description: 'You\'ve successfully signed in as administrator.'
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in:', error);
-      sonnerToast.error('Authentication error', {
-        description: 'An unexpected error occurred'
-      });
+      throw error;
     } finally {
       setIsLoading(false);
     }
