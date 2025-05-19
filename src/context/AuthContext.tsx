@@ -2,7 +2,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
 import { toast as sonnerToast } from 'sonner';
 
 interface AuthContextProps {
@@ -21,22 +20,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchInitialSession = async () => {
+    const setupAuth = async () => {
       try {
         // First check for existing session
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log('Initial session check:', currentSession?.user?.email);
         
         if (currentSession?.user) {
           setSession(currentSession);
           setUser(currentSession.user);
-          checkUserAdmin(currentSession.user.id);
+          await checkUserAdmin(currentSession.user.id);
         }
       } catch (error) {
         console.error('Error checking initial session:', error);
+        sonnerToast.error('Authentication error', { 
+          description: 'Failed to check authentication state' 
+        });
       } finally {
         setIsLoading(false);
       }
@@ -44,22 +44,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         console.log('Auth state changed:', event, currentSession?.user?.email);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
-          setTimeout(() => {
-            checkUserAdmin(currentSession.user.id);
-          }, 0);
+          await checkUserAdmin(currentSession.user.id);
         } else {
           setIsAdmin(false);
         }
       }
     );
 
-    fetchInitialSession();
+    setupAuth();
 
     return () => {
       subscription.unsubscribe();
@@ -77,6 +75,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('Error fetching admin status:', error);
+        sonnerToast.error('Error', {
+          description: 'Could not verify admin permissions'
+        });
         return;
       }
 
@@ -84,6 +85,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
+      sonnerToast.error('Error', {
+        description: 'Could not verify admin permissions'
+      });
     }
   };
 
@@ -91,6 +95,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       console.log('Attempting sign in for:', email);
+      
+      // Use the auth.signInWithPassword method with error handling
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -99,40 +105,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         console.error('Sign in error:', error.message);
         sonnerToast.error('Authentication error', {
-          description: error.message
+          description: error.message || 'Failed to sign in'
         });
-        throw error;
+        return;
       }
 
-      // Check if the user is an admin after successful sign in
-      if (data.user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', data.user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error('Error checking admin status:', profileError);
-        } else {
-          setIsAdmin(profileData?.is_admin || false);
-          
-          if (!profileData?.is_admin) {
-            await supabase.auth.signOut();
-            sonnerToast.error('Access denied', {
-              description: 'Only administrators can access this site.'
-            });
-            return;
-          }
-        }
+      if (!data.user) {
+        sonnerToast.error('Authentication error', {
+          description: 'No user found'
+        });
+        return;
       }
 
-      console.log('Sign in successful for:', email);
+      // Check if the user is an admin
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error checking admin status:', profileError);
+        sonnerToast.error('Error', {
+          description: 'Could not verify admin permissions'
+        });
+        return;
+      }
+
+      if (!profileData?.is_admin) {
+        // Sign out if not admin
+        await supabase.auth.signOut();
+        sonnerToast.error('Access denied', {
+          description: 'Only administrators can access this site.'
+        });
+        return;
+      }
+
       sonnerToast.success('Welcome back!', {
         description: 'You\'ve successfully signed in as administrator.'
       });
+      
     } catch (error) {
       console.error('Error signing in:', error);
+      sonnerToast.error('Authentication error', {
+        description: 'An unexpected error occurred'
+      });
     } finally {
       setIsLoading(false);
     }

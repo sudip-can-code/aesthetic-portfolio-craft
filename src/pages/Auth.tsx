@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -38,12 +39,15 @@ const Auth = () => {
   });
 
   const onLoginSubmit = async (data: LoginFormValues) => {
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       await signIn(data.email, data.password);
       // Navigation happens in useEffect when user state changes
     } catch (error) {
       console.error('Login error:', error);
+      toast.error('Failed to sign in', {
+        description: 'Please check your credentials and try again.'
+      });
     } finally {
       setIsSubmitting(false);
     }
