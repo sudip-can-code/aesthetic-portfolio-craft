@@ -84,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
       console.log('Attempting sign in for:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -107,11 +108,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      setIsLoading(true);
       console.log('Attempting sign up for:', email);
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -137,14 +141,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       sonnerToast.success('Registration successful', {
         description: 'Your account has been created. You can now sign in.'
       });
+      
+      // Automatically sign in after successful signup
+      await signIn(email, password);
     } catch (error) {
       console.error('Error signing up:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setIsLoading(true);
       await supabase.auth.signOut();
       sonnerToast.success('Signed out', {
         description: 'You\'ve been successfully signed out.'
@@ -156,6 +166,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Failed to sign out. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 

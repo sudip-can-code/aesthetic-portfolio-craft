@@ -1,16 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -29,14 +29,16 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 const Auth = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const [activeTab, setActiveTab] = useState('login');
+  const { signIn, signUp, user, isLoading: authLoading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -57,29 +59,36 @@ const Auth = () => {
   });
 
   const onLoginSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       await signIn(data.email, data.password);
-      navigate('/');
+      // Navigation will happen in useEffect when user state changes
     } catch (error) {
       console.error('Login error:', error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const onSignupSubmit = async (data: SignupFormValues) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       await signUp(data.email, data.password, data.fullName);
-      loginForm.setValue('email', data.email);
-      loginForm.setValue('password', data.password);
+      // Navigation will happen in useEffect when user state changes
     } catch (error) {
       console.error('Signup error:', error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (authLoading && user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -89,7 +98,7 @@ const Auth = () => {
           <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login">
+          <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -124,8 +133,13 @@ const Auth = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Logging in...' : 'Login'}
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    ) : 'Login'}
                   </Button>
                 </form>
               </Form>
@@ -186,8 +200,13 @@ const Auth = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating Account...' : 'Sign Up'}
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : 'Sign Up'}
                   </Button>
                 </form>
               </Form>

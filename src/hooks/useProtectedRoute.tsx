@@ -9,6 +9,7 @@ export const useProtectedRoute = (adminOnly = false) => {
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
+    // Only perform navigation after auth check is complete
     if (!isLoading) {
       console.log('Protected route check:', { user, isAdmin, adminOnly });
       
@@ -19,6 +20,7 @@ export const useProtectedRoute = (adminOnly = false) => {
         console.log('User is not admin, redirecting to home page');
         navigate('/');
       } else {
+        console.log('User authorized to access this route');
         setAuthorized(true);
       }
     }
