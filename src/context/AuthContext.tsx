@@ -11,7 +11,6 @@ interface AuthContextProps {
   isAdmin: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -25,15 +24,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener first
+    const fetchInitialSession = async () => {
+      try {
+        // First check for existing session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('Initial session check:', currentSession?.user?.email);
+        
+        if (currentSession?.user) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          checkUserAdmin(currentSession.user.id);
+        }
+      } catch (error) {
+        console.error('Error checking initial session:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log('Auth state changed:', event, currentSession?.user?.email);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Don't call Supabase directly within the auth state change callback
-        // Use setTimeout to defer API calls until the next event loop
         if (currentSession?.user) {
           setTimeout(() => {
             checkUserAdmin(currentSession.user.id);
@@ -44,17 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log('Initial session check:', currentSession?.user?.email);
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        checkUserAdmin(currentSession.user.id);
-      }
-      setIsLoading(false);
-    });
+    fetchInitialSession();
 
     return () => {
       subscription.unsubscribe();
@@ -93,60 +98,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('Sign in error:', error.message);
-        toast({
-          title: "Authentication error",
-          description: error.message,
-          variant: "destructive",
+        sonnerToast.error('Authentication error', {
+          description: error.message
         });
         throw error;
+      }
+
+      // Check if the user is an admin after successful sign in
+      if (data.user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('Error checking admin status:', profileError);
+        } else {
+          setIsAdmin(profileData?.is_admin || false);
+          
+          if (!profileData?.is_admin) {
+            await supabase.auth.signOut();
+            sonnerToast.error('Access denied', {
+              description: 'Only administrators can access this site.'
+            });
+            return;
+          }
+        }
       }
 
       console.log('Sign in successful for:', email);
       sonnerToast.success('Welcome back!', {
-        description: 'You\'ve successfully signed in.'
+        description: 'You\'ve successfully signed in as administrator.'
       });
     } catch (error) {
       console.error('Error signing in:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const signUp = async (email: string, password: string, fullName: string) => {
-    try {
-      setIsLoading(true);
-      console.log('Attempting sign up for:', email);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
-
-      if (error) {
-        console.error('Sign up error:', error.message);
-        toast({
-          title: "Registration error",
-          description: error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      console.log('Sign up successful for:', email);
-      sonnerToast.success('Registration successful', {
-        description: 'Your account has been created. You can now sign in.'
-      });
-      
-      // Automatically sign in after successful signup
-      await signIn(email, password);
-    } catch (error) {
-      console.error('Error signing up:', error);
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -161,10 +147,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } catch (error) {
       console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
+      sonnerToast.error('Error', {
+        description: 'Failed to sign out. Please try again.'
       });
     } finally {
       setIsLoading(false);
@@ -179,7 +163,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAdmin,
         isLoading,
         signIn,
-        signUp,
         signOut,
       }}
     >
