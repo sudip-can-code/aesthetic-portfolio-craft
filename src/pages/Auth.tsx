@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -91,7 +90,7 @@ const Auth = () => {
       if (error.message && error.message.includes('Database error querying schema')) {
         setDbConfigIssue(true);
         toast.error('Authentication error', {
-          description: 'There is a database configuration issue. We'll try to fix it automatically.'
+          description: "There is a database configuration issue. We will try to fix it automatically."
         });
         
         // Try to create admin user automatically
@@ -144,7 +143,7 @@ const Auth = () => {
               <AlertTitle>Database Configuration Issue</AlertTitle>
               <AlertDescription>
                 There appears to be an issue with the database configuration. 
-                We've attempted to fix it automatically. Please try logging in again.
+                We have attempted to fix it automatically. Please try logging in again.
               </AlertDescription>
             </Alert>
           )}
