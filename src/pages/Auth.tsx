@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -43,37 +44,69 @@ const Auth = () => {
 
   const createAdminUser = async (email: string) => {
     try {
-      // Get user by email
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id, is_admin')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+      console.log('Attempting to create/update admin user for:', email);
+      
+      // Get the current user
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('Error fetching user:', userError);
+        console.error('Error getting current user:', userError);
         return false;
       }
-
-      if (!userData) {
-        console.error('User not found in profiles');
+      
+      if (!currentUser) {
+        console.error('No authenticated user found');
         return false;
       }
-
-      // Update user to admin
-      const { error: updateError } = await supabase
+      
+      // Check if profile exists
+      const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
-        .update({ is_admin: true })
-        .eq('id', userData.id);
-
-      if (updateError) {
-        console.error('Error updating user to admin:', updateError);
+        .select('id, is_admin')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+        
+      console.log('Existing profile check:', { existingProfile, profileError });
+      
+      if (profileError && !profileError.message.includes('No rows found')) {
+        console.error('Error fetching profile:', profileError);
         return false;
       }
-
-      return true;
+      
+      if (!existingProfile) {
+        // Create profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ 
+            id: currentUser.id,
+            is_admin: true,
+            full_name: email.split('@')[0]
+          });
+          
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          return false;
+        }
+        
+        console.log('Created new admin profile');
+        return true;
+      } else {
+        // Update existing profile to admin
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ is_admin: true })
+          .eq('id', currentUser.id);
+          
+        if (updateError) {
+          console.error('Error updating to admin:', updateError);
+          return false;
+        }
+        
+        console.log('Updated existing profile to admin');
+        return true;
+      }
     } catch (error) {
-      console.error('Error creating admin user:', error);
+      console.error('Error in createAdminUser:', error);
       return false;
     }
   };
@@ -107,6 +140,10 @@ const Auth = () => {
       } else if (error.message && error.message.includes('Only administrators')) {
         toast.error('Access denied', {
           description: 'Only administrators can access this site.'
+        });
+      } else if (error.message && error.message.includes('Invalid login credentials')) {
+        toast.error('Invalid credentials', {
+          description: 'Please check your email and password.'
         });
       } else {
         toast.error('Failed to sign in', {

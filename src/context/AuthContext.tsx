@@ -26,7 +26,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setIsLoading(true);
         
-        // First check for existing session
+        // First set up auth state listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (event, currentSession) => {
+            console.log('Auth state changed:', event, currentSession?.user?.email);
+            
+            // Update state synchronously first
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            
+            // Then check admin status if needed
+            if (currentSession?.user) {
+              // Use setTimeout to prevent deadlocks
+              setTimeout(() => {
+                checkUserAdmin(currentSession.user.id);
+              }, 0);
+            } else {
+              setIsAdmin(false);
+            }
+          }
+        );
+        
+        // Then check for existing session
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -39,6 +60,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(currentSession.user);
           await checkUserAdmin(currentSession.user.id);
         }
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error('Error checking initial session:', error);
         sonnerToast.error('Authentication error', { 
@@ -49,32 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        console.log('Auth state changed:', event, currentSession?.user?.email);
-        
-        // Update state synchronously first
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        // Then check admin status if needed
-        if (currentSession?.user) {
-          // Use setTimeout to prevent deadlocks
-          setTimeout(() => {
-            checkUserAdmin(currentSession.user.id);
-          }, 0);
-        } else {
-          setIsAdmin(false);
-        }
-      }
-    );
-
     setupAuth();
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const checkUserAdmin = async (userId: string) => {
@@ -91,6 +91,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (error) {
           console.error('Error fetching admin status:', error);
+          
+          // If profiles table doesn't exist yet, try to create it
+          if (error.message.includes('does not exist')) {
+            console.log('Profiles table may not exist, attempting to create profile for user');
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({ id: userId, is_admin: true })
+              .select();
+              
+            if (insertError) {
+              console.error('Error creating profile:', insertError);
+              sonnerToast.error('Error', {
+                description: 'Could not create user profile'
+              });
+              return;
+            } else {
+              console.log('Created new profile with admin rights');
+              setIsAdmin(true);
+              sonnerToast.success('Admin access granted');
+              return;
+            }
+          }
+          
           sonnerToast.error('Error', {
             description: 'Could not verify admin permissions'
           });
@@ -100,7 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Admin status result:', data);
         
         // If no profile exists or is_admin is null/false
-        if (!data || !data.is_admin) {
+        if (!data || data.is_admin !== true) {
           console.log('User is not an admin');
           setIsAdmin(false);
           
@@ -142,7 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Handle potential errors from signIn
       if (result.error) {
         console.error('Sign-in error:', result.error);
-        throw new Error(result.error.message || 'Failed to authenticate');
+        throw result.error;
       }
       
       // Verify user data exists
@@ -163,6 +186,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
       sonnerToast.success('Signed out', {
         description: 'You\'ve been successfully signed out.'
       });
