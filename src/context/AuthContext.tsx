@@ -80,22 +80,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkUserAdmin = async (userId: string) => {
     try {
       console.log('Checking admin status for user:', userId);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', userId)
-        .maybeSingle();
+      
+      // First try to query the profiles table
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', userId)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching admin status:', error);
-        sonnerToast.error('Error', {
-          description: 'Could not verify admin permissions'
-        });
-        return;
+        if (error) {
+          console.error('Error fetching admin status:', error);
+          sonnerToast.error('Error', {
+            description: 'Could not verify admin permissions'
+          });
+          return;
+        }
+
+        console.log('Admin status result:', data);
+        
+        // If no profile exists or is_admin is null/false
+        if (!data || !data.is_admin) {
+          console.log('User is not an admin');
+          setIsAdmin(false);
+          
+          // If the user has logged in but isn't an admin, sign them out
+          if (session) {
+            sonnerToast.error('Access denied', {
+              description: 'Only administrators can access this site'
+            });
+            await signOut();
+          }
+        } else {
+          console.log('User is an admin');
+          setIsAdmin(true);
+          sonnerToast.success('Welcome back, administrator');
+        }
+      } catch (innerError) {
+        console.error('Error in profiles query:', innerError);
+        throw innerError;
       }
-
-      console.log('Admin status result:', data);
-      setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
       sonnerToast.error('Error', {
@@ -126,9 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('No user returned from authentication');
       }
       
-      // Successful login - admin check happens in auth state change listener
-      // which will redirect if necessary
-      
+      // Admin check happens in auth state change listener
     } catch (error: any) {
       console.error('Error signing in:', error);
       throw error;
