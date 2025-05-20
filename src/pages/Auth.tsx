@@ -45,9 +45,21 @@ const Auth = () => {
       // Navigation happens in useEffect when user state changes
     } catch (error: any) {
       console.error('Login error:', error);
-      toast.error('Failed to sign in', {
-        description: error.message || 'Please check your credentials and try again.'
-      });
+      
+      // Handle the specific database schema error
+      if (error.message && error.message.includes('Database error querying schema')) {
+        toast.error('Authentication error', {
+          description: 'There is a database configuration issue. Please contact support.'
+        });
+      } else if (error.message && error.message.includes('Only administrators')) {
+        toast.error('Access denied', {
+          description: 'Only administrators can access this site.'
+        });
+      } else {
+        toast.error('Failed to sign in', {
+          description: error.message || 'Please check your credentials and try again.'
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

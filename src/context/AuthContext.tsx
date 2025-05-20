@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
+      (event, currentSession) => {
         console.log('Auth state changed:', event, currentSession?.user?.email);
         
         // Update state synchronously first
@@ -109,41 +109,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       console.log('Attempting sign in for:', email);
       
-      // Use the auth.signInWithPassword method with error handling
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Use a more robust error handling approach
+      const result = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      if (error) {
-        throw error;
+      
+      // Handle potential errors from signIn
+      if (result.error) {
+        console.error('Sign-in error:', result.error);
+        throw new Error(result.error.message || 'Failed to authenticate');
       }
-
-      if (!data.user) {
-        throw new Error('No user found');
+      
+      // Verify user data exists
+      if (!result.data?.user) {
+        throw new Error('No user returned from authentication');
       }
-
-      // Check if the user is an admin
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', data.user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error('Error checking admin status:', profileError);
-        throw new Error('Could not verify admin permissions');
-      }
-
-      if (!profileData?.is_admin) {
-        // Sign out if not admin
-        await supabase.auth.signOut();
-        throw new Error('Only administrators can access this site.');
-      }
-
-      sonnerToast.success('Welcome back!', {
-        description: 'You\'ve successfully signed in as administrator.'
-      });
+      
+      // Successful login - admin check happens in auth state change listener
+      // which will redirect if necessary
       
     } catch (error: any) {
       console.error('Error signing in:', error);
