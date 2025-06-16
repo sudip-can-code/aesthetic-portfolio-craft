@@ -39,10 +39,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(currentSession?.user ?? null);
             
             if (currentSession?.user) {
-              // Use setTimeout to prevent potential deadlocks
-              setTimeout(() => {
-                checkUserAdmin(currentSession.user);
-              }, 0);
+              // Check admin status without triggering database errors
+              if (currentSession.user.email === ADMIN_EMAIL) {
+                setIsAdmin(true);
+                sonnerToast.success('Welcome back, Administrator');
+              } else {
+                setIsAdmin(false);
+                sonnerToast.error('Access denied', {
+                  description: 'Only the site administrator can access this panel'
+                });
+                await signOut();
+              }
             } else {
               setIsAdmin(false);
             }
@@ -50,20 +57,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         );
         
         // Check for existing session
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Error getting session:', sessionError);
-          sonnerToast.error('Session error', { 
-            description: 'Failed to retrieve authentication session' 
-          });
-          return;
-        }
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         if (currentSession?.user) {
           setSession(currentSession);
           setUser(currentSession.user);
-          await checkUserAdmin(currentSession.user);
+          if (currentSession.user.email === ADMIN_EMAIL) {
+            setIsAdmin(true);
+          }
         }
 
         return () => {
@@ -82,81 +83,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setupAuth();
   }, []);
 
-  const checkUserAdmin = async (user: User) => {
-    try {
-      console.log('Checking admin status for user:', user.email);
-      
-      // Only allow your specific Gmail account
-      if (user.email !== ADMIN_EMAIL) {
-        console.log('User email does not match admin email');
-        setIsAdmin(false);
-        sonnerToast.error('Access denied', {
-          description: 'Only the site administrator can access this panel'
-        });
-        await signOut();
-        return;
-      }
-
-      // Check if profile exists in database
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profileError && !profileError.message.includes('No rows found')) {
-        console.error('Error fetching profile:', profileError);
-        sonnerToast.error('Profile error', {
-          description: 'Could not verify admin permissions'
-        });
-        return;
-      }
-
-      if (!profileData) {
-        // Create admin profile for your Gmail account
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({ 
-            id: user.id,
-            user_id: user.id,
-            email: user.email,
-            is_admin: true,
-            full_name: 'Sudip Admin'
-          });
-          
-        if (insertError) {
-          console.error('Error creating admin profile:', insertError);
-          sonnerToast.error('Profile creation error', {
-            description: 'Could not create admin profile'
-          });
-          return;
-        }
-        
-        console.log('Created admin profile for:', user.email);
-        setIsAdmin(true);
-        sonnerToast.success('Welcome Administrator!', {
-          description: 'Your admin profile has been created'
-        });
-      } else if (profileData.is_admin) {
-        console.log('User is confirmed admin');
-        setIsAdmin(true);
-        sonnerToast.success('Welcome back, Administrator');
-      } else {
-        console.log('User exists but is not admin');
-        setIsAdmin(false);
-        sonnerToast.error('Access denied', {
-          description: 'Only administrators can access this site'
-        });
-        await signOut();
-      }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      sonnerToast.error('Admin check error', {
-        description: 'Could not verify admin permissions'
-      });
-    }
-  };
-
   const signUp = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -167,24 +93,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('Only the site administrator can create an account');
       }
       
-      const redirectUrl = `${window.location.origin}/auth`;
-      
-      const result = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: `${window.location.origin}/auth`
         }
       });
       
-      if (result.error) {
-        console.error('Sign-up error:', result.error);
-        throw result.error;
+      if (error) {
+        console.error('Sign-up error:', error);
+        throw error;
       }
       
-      sonnerToast.success('Account created successfully', {
-        description: 'Please check your email for verification'
-      });
+      if (data.user && !data.session) {
+        sonnerToast.success('Account created successfully', {
+          description: 'Please check your email for verification'
+        });
+      } else if (data.session) {
+        sonnerToast.success('Account created and logged in successfully');
+      }
       
     } catch (error: any) {
       console.error('Error signing up:', error);
@@ -204,17 +132,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('Only the site administrator can access this panel');
       }
       
-      const result = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (result.error) {
-        console.error('Sign-in error:', result.error);
-        throw result.error;
+      if (error) {
+        console.error('Sign-in error:', error);
+        throw error;
       }
       
-      if (!result.data?.user) {
+      if (!data?.user) {
         throw new Error('No user returned from authentication');
       }
       
@@ -230,13 +158,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       setIsLoading(true);
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
       setSession(null);
       setUser(null);
       setIsAdmin(false);
-      sonnerToast.success('Signed out', {
-        description: 'You\'ve been successfully signed out.'
-      });
+      sonnerToast.success('Signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
       sonnerToast.error('Sign out error', {

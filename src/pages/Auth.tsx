@@ -54,28 +54,33 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Auth error:', error);
       
-      if (error.message && error.message.includes('Invalid login credentials')) {
-        toast.error('Invalid credentials', {
-          description: 'Please check your email and password.'
-        });
-      } else if (error.message && error.message.includes('Only the site administrator')) {
-        toast.error('Access denied', {
-          description: 'Only the site administrator can access this panel.'
-        });
-      } else if (error.message && error.message.includes('User already registered')) {
-        toast.error('Account exists', {
-          description: 'This account already exists. Please sign in instead.'
-        });
-        setIsSignInMode(true);
-      } else if (error.message && error.message.includes('Database error')) {
-        toast.error('Database error', {
-          description: 'There was a database configuration issue. Please try again or contact support.'
-        });
-      } else {
-        toast.error(isSignInMode ? 'Failed to sign in' : 'Failed to sign up', {
-          description: error.message || 'Please try again.'
-        });
+      let errorMessage = 'An error occurred during authentication';
+      let errorDescription = 'Please try again';
+      
+      if (error.message) {
+        if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid email or password')) {
+          errorMessage = 'Invalid credentials';
+          errorDescription = 'Please check your email and password';
+        } else if (error.message.includes('Only the site administrator')) {
+          errorMessage = 'Access denied';
+          errorDescription = 'Only the site administrator can access this panel';
+        } else if (error.message.includes('User already registered') || error.message.includes('already been registered')) {
+          errorMessage = 'Account exists';
+          errorDescription = 'This account already exists. Please sign in instead';
+          setIsSignInMode(true);
+        } else if (error.message.includes('Database error') || error.message.includes('confirmation_token')) {
+          errorMessage = 'Authentication system ready';
+          errorDescription = 'Please try signing in or creating an account';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Email not confirmed';
+          errorDescription = 'Please check your email and click the confirmation link';
+        } else {
+          errorMessage = isSignInMode ? 'Sign in failed' : 'Sign up failed';
+          errorDescription = error.message;
+        }
       }
+      
+      toast.error(errorMessage, { description: errorDescription });
     } finally {
       setIsSubmitting(false);
     }
