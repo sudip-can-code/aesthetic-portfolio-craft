@@ -11,6 +11,7 @@ interface AuthContextProps {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -29,18 +30,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setIsLoading(true);
         
-        // First set up auth state listener
+        // Set up auth state listener first
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event, currentSession) => {
+          async (event, currentSession) => {
             console.log('Auth state changed:', event, currentSession?.user?.email);
             
-            // Update state synchronously first
             setSession(currentSession);
             setUser(currentSession?.user ?? null);
             
-            // Then check admin status if needed
             if (currentSession?.user) {
-              // Use setTimeout to prevent deadlocks
+              // Use setTimeout to prevent potential deadlocks
               setTimeout(() => {
                 checkUserAdmin(currentSession.user);
               }, 0);
@@ -50,11 +49,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         );
         
-        // Then check for existing session
+        // Check for existing session
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('Error getting session:', sessionError);
+          sonnerToast.error('Session error', { 
+            description: 'Failed to retrieve authentication session' 
+          });
           return;
         }
         
@@ -68,9 +70,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           subscription.unsubscribe();
         };
       } catch (error) {
-        console.error('Error checking initial session:', error);
+        console.error('Error in auth setup:', error);
         sonnerToast.error('Authentication error', { 
-          description: 'Failed to check authentication state' 
+          description: 'Failed to initialize authentication' 
         });
       } finally {
         setIsLoading(false);
@@ -104,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (profileError && !profileError.message.includes('No rows found')) {
         console.error('Error fetching profile:', profileError);
-        sonnerToast.error('Error', {
+        sonnerToast.error('Profile error', {
           description: 'Could not verify admin permissions'
         });
         return;
@@ -124,7 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
         if (insertError) {
           console.error('Error creating admin profile:', insertError);
-          sonnerToast.error('Error', {
+          sonnerToast.error('Profile creation error', {
             description: 'Could not create admin profile'
           });
           return;
@@ -149,9 +151,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
-      sonnerToast.error('Error', {
+      sonnerToast.error('Admin check error', {
         description: 'Could not verify admin permissions'
       });
+    }
+  };
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+      console.log('Attempting sign up for:', email);
+      
+      // Check if email matches admin email before attempting sign up
+      if (email !== ADMIN_EMAIL) {
+        throw new Error('Only the site administrator can create an account');
+      }
+      
+      const redirectUrl = `${window.location.origin}/auth`;
+      
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+      
+      if (result.error) {
+        console.error('Sign-up error:', result.error);
+        throw result.error;
+      }
+      
+      sonnerToast.success('Account created successfully', {
+        description: 'Please check your email for verification'
+      });
+      
+    } catch (error: any) {
+      console.error('Error signing up:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -200,7 +239,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } catch (error) {
       console.error('Error signing out:', error);
-      sonnerToast.error('Error', {
+      sonnerToast.error('Sign out error', {
         description: 'Failed to sign out. Please try again.'
       });
     } finally {
@@ -217,6 +256,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         signIn,
         signOut,
+        signUp,
       }}
     >
       {children}

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,21 +12,18 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from 'lucide-react';
 
-const loginSchema = z.object({
+const authSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type AuthFormValues = z.infer<typeof authSchema>;
 
 const Auth = () => {
+  const [isSignInMode, setIsSignInMode] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dbConfigIssue, setDbConfigIssue] = useState(false);
-  const { signIn, user, isLoading: authLoading } = useAuth();
+  const { signIn, signUp, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -34,120 +32,48 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
-  const loginForm = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const authForm = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
     defaultValues: {
-      email: '',
+      email: 'sudeepsnwr8@gmail.com',
       password: '',
     },
   });
 
-  const createAdminUser = async (email: string) => {
-    try {
-      console.log('Attempting to create/update admin user for:', email);
-      
-      // Get the current user
-      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        console.error('Error getting current user:', userError);
-        return false;
-      }
-      
-      if (!currentUser) {
-        console.error('No authenticated user found');
-        return false;
-      }
-      
-      // Check if profile exists
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, is_admin')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-        
-      console.log('Existing profile check:', { existingProfile, profileError });
-      
-      if (profileError && !profileError.message.includes('No rows found')) {
-        console.error('Error fetching profile:', profileError);
-        return false;
-      }
-      
-      if (!existingProfile) {
-        // Create profile if it doesn't exist
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({ 
-            id: currentUser.id,
-            is_admin: true,
-            full_name: email.split('@')[0]
-          });
-          
-        if (insertError) {
-          console.error('Error creating profile:', insertError);
-          return false;
-        }
-        
-        console.log('Created new admin profile');
-        return true;
-      } else {
-        // Update existing profile to admin
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ is_admin: true })
-          .eq('id', currentUser.id);
-          
-        if (updateError) {
-          console.error('Error updating to admin:', updateError);
-          return false;
-        }
-        
-        console.log('Updated existing profile to admin');
-        return true;
-      }
-    } catch (error) {
-      console.error('Error in createAdminUser:', error);
-      return false;
-    }
-  };
-
-  const onLoginSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: AuthFormValues) => {
     try {
       setIsSubmitting(true);
-      await signIn(data.email, data.password);
+      
+      if (isSignInMode) {
+        await signIn(data.email, data.password);
+      } else {
+        await signUp(data.email, data.password);
+      }
+      
       // Navigation happens in useEffect when user state changes
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Auth error:', error);
       
-      // Handle the database schema error which indicates an issue with the profiles setup
-      if (error.message && error.message.includes('Database error querying schema')) {
-        setDbConfigIssue(true);
-        toast.error('Authentication error', {
-          description: "There is a database configuration issue. We will try to fix it automatically."
-        });
-        
-        // Try to create admin user automatically
-        const success = await createAdminUser(data.email);
-        if (success) {
-          toast.success('Admin user created', {
-            description: 'Please try logging in again.'
-          });
-        } else {
-          toast.error('Failed to create admin user', {
-            description: 'Please check the Supabase dashboard and ensure the profiles table is set up correctly.'
-          });
-        }
-      } else if (error.message && error.message.includes('Only administrators')) {
-        toast.error('Access denied', {
-          description: 'Only administrators can access this site.'
-        });
-      } else if (error.message && error.message.includes('Invalid login credentials')) {
+      if (error.message && error.message.includes('Invalid login credentials')) {
         toast.error('Invalid credentials', {
           description: 'Please check your email and password.'
         });
+      } else if (error.message && error.message.includes('Only the site administrator')) {
+        toast.error('Access denied', {
+          description: 'Only the site administrator can access this panel.'
+        });
+      } else if (error.message && error.message.includes('User already registered')) {
+        toast.error('Account exists', {
+          description: 'This account already exists. Please sign in instead.'
+        });
+        setIsSignInMode(true);
+      } else if (error.message && error.message.includes('Database error')) {
+        toast.error('Database error', {
+          description: 'There was a database configuration issue. Please try again or contact support.'
+        });
       } else {
-        toast.error('Failed to sign in', {
-          description: error.message || 'Please check your credentials and try again.'
+        toast.error(isSignInMode ? 'Failed to sign in' : 'Failed to sign up', {
+          description: error.message || 'Please try again.'
         });
       }
     } finally {
@@ -171,58 +97,112 @@ const Auth = () => {
             <Shield className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl">Admin Access</CardTitle>
-          <CardDescription>Sign in with your administrator credentials</CardDescription>
+          <CardDescription>
+            {isSignInMode 
+              ? 'Sign in with your administrator credentials' 
+              : 'Create your administrator account'
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {dbConfigIssue && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Database Configuration Issue</AlertTitle>
-              <AlertDescription>
-                There appears to be an issue with the database configuration. 
-                We have attempted to fix it automatically. Please try logging in again.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-              <FormField
-                control={loginForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="admin@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={loginForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : 'Sign In'}
-              </Button>
-            </form>
-          </Form>
+          <Tabs value={isSignInMode ? 'signin' : 'signup'} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger 
+                value="signin" 
+                onClick={() => setIsSignInMode(true)}
+              >
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger 
+                value="signup" 
+                onClick={() => setIsSignInMode(false)}
+              >
+                Sign Up
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="signin" className="mt-4">
+              <Form {...authForm}>
+                <form onSubmit={authForm.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={authForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="sudeepsnwr8@gmail.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={authForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : 'Sign In'}
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+            
+            <TabsContent value="signup" className="mt-4">
+              <Form {...authForm}>
+                <form onSubmit={authForm.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={authForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="sudeepsnwr8@gmail.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={authForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : 'Create Account'}
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
         <CardFooter className="justify-center text-sm text-muted-foreground">
           This area is restricted to administrators only
