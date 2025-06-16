@@ -21,6 +21,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Your specific admin email
+  const ADMIN_EMAIL = 'sudeepsnwr8@gmail.com';
+
   useEffect(() => {
     const setupAuth = async () => {
       try {
@@ -39,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (currentSession?.user) {
               // Use setTimeout to prevent deadlocks
               setTimeout(() => {
-                checkUserAdmin(currentSession.user.id);
+                checkUserAdmin(currentSession.user);
               }, 0);
             } else {
               setIsAdmin(false);
@@ -58,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (currentSession?.user) {
           setSession(currentSession);
           setUser(currentSession.user);
-          await checkUserAdmin(currentSession.user.id);
+          await checkUserAdmin(currentSession.user);
         }
 
         return () => {
@@ -77,71 +80,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setupAuth();
   }, []);
 
-  const checkUserAdmin = async (userId: string) => {
+  const checkUserAdmin = async (user: User) => {
     try {
-      console.log('Checking admin status for user:', userId);
+      console.log('Checking admin status for user:', user.email);
       
-      // First try to query the profiles table
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', userId)
-          .maybeSingle();
+      // Only allow your specific Gmail account
+      if (user.email !== ADMIN_EMAIL) {
+        console.log('User email does not match admin email');
+        setIsAdmin(false);
+        sonnerToast.error('Access denied', {
+          description: 'Only the site administrator can access this panel'
+        });
+        await signOut();
+        return;
+      }
 
-        if (error) {
-          console.error('Error fetching admin status:', error);
+      // Check if profile exists in database
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profileError && !profileError.message.includes('No rows found')) {
+        console.error('Error fetching profile:', profileError);
+        sonnerToast.error('Error', {
+          description: 'Could not verify admin permissions'
+        });
+        return;
+      }
+
+      if (!profileData) {
+        // Create admin profile for your Gmail account
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ 
+            id: user.id,
+            user_id: user.id,
+            email: user.email,
+            is_admin: true,
+            full_name: 'Sudip Admin'
+          });
           
-          // If profiles table doesn't exist yet, try to create it
-          if (error.message.includes('does not exist')) {
-            console.log('Profiles table may not exist, attempting to create profile for user');
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert({ id: userId, is_admin: true })
-              .select();
-              
-            if (insertError) {
-              console.error('Error creating profile:', insertError);
-              sonnerToast.error('Error', {
-                description: 'Could not create user profile'
-              });
-              return;
-            } else {
-              console.log('Created new profile with admin rights');
-              setIsAdmin(true);
-              sonnerToast.success('Admin access granted');
-              return;
-            }
-          }
-          
+        if (insertError) {
+          console.error('Error creating admin profile:', insertError);
           sonnerToast.error('Error', {
-            description: 'Could not verify admin permissions'
+            description: 'Could not create admin profile'
           });
           return;
         }
-
-        console.log('Admin status result:', data);
         
-        // If no profile exists or is_admin is null/false
-        if (!data || data.is_admin !== true) {
-          console.log('User is not an admin');
-          setIsAdmin(false);
-          
-          // If the user has logged in but isn't an admin, sign them out
-          if (session) {
-            sonnerToast.error('Access denied', {
-              description: 'Only administrators can access this site'
-            });
-            await signOut();
-          }
-        } else {
-          console.log('User is an admin');
-          setIsAdmin(true);
-          sonnerToast.success('Welcome back, administrator');
-        }
-      } catch (innerError) {
-        console.error('Error in profiles query:', innerError);
-        throw innerError;
+        console.log('Created admin profile for:', user.email);
+        setIsAdmin(true);
+        sonnerToast.success('Welcome Administrator!', {
+          description: 'Your admin profile has been created'
+        });
+      } else if (profileData.is_admin) {
+        console.log('User is confirmed admin');
+        setIsAdmin(true);
+        sonnerToast.success('Welcome back, Administrator');
+      } else {
+        console.log('User exists but is not admin');
+        setIsAdmin(false);
+        sonnerToast.error('Access denied', {
+          description: 'Only administrators can access this site'
+        });
+        await signOut();
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -156,19 +160,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       console.log('Attempting sign in for:', email);
       
-      // Use a more robust error handling approach
+      // Check if email matches admin email before attempting sign in
+      if (email !== ADMIN_EMAIL) {
+        throw new Error('Only the site administrator can access this panel');
+      }
+      
       const result = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      // Handle potential errors from signIn
       if (result.error) {
         console.error('Sign-in error:', result.error);
         throw result.error;
       }
       
-      // Verify user data exists
       if (!result.data?.user) {
         throw new Error('No user returned from authentication');
       }

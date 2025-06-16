@@ -33,21 +33,33 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          created_at: string | null
+          email: string | null
           full_name: string | null
           id: string
           is_admin: boolean | null
+          updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id: string
           is_admin?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -102,6 +114,36 @@ export type Database = {
           id?: string
           section?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          section: string | null
+          updated_at: string | null
+          value: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          section?: string | null
+          updated_at?: string | null
+          value?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          section?: string | null
+          updated_at?: string | null
+          value?: Json | null
         }
         Relationships: []
       }
