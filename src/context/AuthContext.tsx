@@ -26,37 +26,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const ADMIN_EMAIL = 'sudeepsnwr8@gmail.com';
 
   useEffect(() => {
-    const setupAuth = async () => {
-      try {
-        setIsLoading(true);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log('Auth state changed:', event, currentSession?.user?.email);
         
-        // Set up auth state listener first
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, currentSession) => {
-            console.log('Auth state changed:', event, currentSession?.user?.email);
-            
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            
-            if (currentSession?.user) {
-              // Check admin status without triggering database errors
-              if (currentSession.user.email === ADMIN_EMAIL) {
-                setIsAdmin(true);
-                sonnerToast.success('Welcome back, Administrator');
-              } else {
-                setIsAdmin(false);
-                sonnerToast.error('Access denied', {
-                  description: 'Only the site administrator can access this panel'
-                });
-                await signOut();
-              }
-            } else {
-              setIsAdmin(false);
-            }
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          if (currentSession.user.email === ADMIN_EMAIL) {
+            setIsAdmin(true);
+            sonnerToast.success('Welcome back, Administrator');
+          } else {
+            setIsAdmin(false);
+            sonnerToast.error('Access denied - Only admin can access');
+            await signOut();
           }
-        );
-        
-        // Check for existing session
+        } else {
+          setIsAdmin(false);
+        }
+      }
+    );
+    
+    // Check for existing session
+    const checkSession = async () => {
+      try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         if (currentSession?.user) {
@@ -66,39 +61,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsAdmin(true);
           }
         }
-
-        return () => {
-          subscription.unsubscribe();
-        };
       } catch (error) {
-        console.error('Error in auth setup:', error);
-        sonnerToast.error('Authentication error', { 
-          description: 'Failed to initialize authentication' 
-        });
+        console.error('Error checking session:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    setupAuth();
+    checkSession();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      console.log('Attempting sign up for:', email);
+      console.log('Creating account for:', email);
       
-      // Check if email matches admin email before attempting sign up
       if (email !== ADMIN_EMAIL) {
-        throw new Error('Only the site administrator can create an account');
+        throw new Error('Only the administrator email can create an account');
       }
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`
-        }
       });
       
       if (error) {
@@ -106,16 +94,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
       
-      if (data.user && !data.session) {
-        sonnerToast.success('Account created successfully', {
-          description: 'Please check your email for verification'
-        });
-      } else if (data.session) {
-        sonnerToast.success('Account created and logged in successfully');
+      if (data.user) {
+        sonnerToast.success('Account created successfully!');
       }
       
     } catch (error: any) {
-      console.error('Error signing up:', error);
+      console.error('Error in signUp:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -125,11 +109,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      console.log('Attempting sign in for:', email);
+      console.log('Signing in:', email);
       
-      // Check if email matches admin email before attempting sign in
       if (email !== ADMIN_EMAIL) {
-        throw new Error('Only the site administrator can access this panel');
+        throw new Error('Only the administrator can sign in');
       }
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -142,13 +125,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
       
-      if (!data?.user) {
-        throw new Error('No user returned from authentication');
+      if (data?.user) {
+        console.log('Sign in successful');
       }
       
-      // Admin check happens in auth state change listener
     } catch (error: any) {
-      console.error('Error signing in:', error);
+      console.error('Error in signIn:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -167,9 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       sonnerToast.success('Signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
-      sonnerToast.error('Sign out error', {
-        description: 'Failed to sign out. Please try again.'
-      });
+      sonnerToast.error('Sign out failed');
     } finally {
       setIsLoading(false);
     }
