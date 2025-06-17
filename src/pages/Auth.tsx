@@ -45,10 +45,12 @@ const Auth = () => {
       
       if (isSignUp) {
         await signUp(data.email, data.password);
-        toast.success('Account created! Now you can sign in.');
+        toast.success('Account created! You can now sign in.');
         setIsSignUp(false);
+        authForm.reset({ email: data.email, password: '' });
       } else {
         await signIn(data.email, data.password);
+        navigate('/admin');
       }
       
     } catch (error: any) {
@@ -58,16 +60,19 @@ const Auth = () => {
       let errorDescription = 'Please try again';
       
       if (error.message) {
-        if (error.message.includes('Invalid login credentials')) {
+        if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
           errorMessage = 'Invalid credentials';
           errorDescription = 'Please check your email and password, or try creating an account first';
-        } else if (error.message.includes('User already registered')) {
+        } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
           errorMessage = 'Account already exists';
           errorDescription = 'Please sign in instead';
           setIsSignUp(false);
         } else if (error.message.includes('administrator')) {
           errorMessage = 'Access denied';
           errorDescription = 'Only the administrator can access this panel';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Email not confirmed';
+          errorDescription = 'Please check your email and click the confirmation link';
         } else {
           errorDescription = error.message;
         }
@@ -79,7 +84,7 @@ const Auth = () => {
     }
   };
 
-  if (authLoading && user) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -112,7 +117,11 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="sudeepsnwr8@gmail.com" {...field} />
+                      <Input 
+                        placeholder="sudeepsnwr8@gmail.com" 
+                        {...field} 
+                        disabled={true}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,7 +147,7 @@ const Auth = () => {
                     {isSignUp ? 'Creating account...' : 'Signing in...'}
                   </>
                 ) : (
-                  isSignUp ? 'Create Account' : 'Sign In'
+                  isSignUp ? 'Create Admin Account' : 'Sign In'
                 )}
               </Button>
             </form>
@@ -147,7 +156,10 @@ const Auth = () => {
           <div className="mt-4 text-center">
             <Button 
               variant="link" 
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                authForm.reset({ email: 'sudeepsnwr8@gmail.com', password: '' });
+              }}
               className="text-sm"
             >
               {isSignUp 

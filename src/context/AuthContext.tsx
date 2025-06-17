@@ -26,6 +26,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const ADMIN_EMAIL = 'sudeepsnwr8@gmail.com';
 
   useEffect(() => {
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting initial session:', error);
+        } else {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          if (initialSession?.user?.email === ADMIN_EMAIL) {
+            setIsAdmin(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getInitialSession();
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
@@ -46,29 +68,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setIsAdmin(false);
         }
-      }
-    );
-    
-    // Check for existing session
-    const checkSession = async () => {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (currentSession?.user) {
-          setSession(currentSession);
-          setUser(currentSession.user);
-          if (currentSession.user.email === ADMIN_EMAIL) {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
         setIsLoading(false);
       }
-    };
-
-    checkSession();
+    );
     
     return () => {
       subscription.unsubscribe();
@@ -87,6 +90,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin`
+        }
       });
       
       if (error) {
@@ -95,7 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (data.user) {
-        sonnerToast.success('Account created successfully!');
+        sonnerToast.success('Account created successfully! Please check your email to confirm.');
       }
       
     } catch (error: any) {
@@ -127,6 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (data?.user) {
         console.log('Sign in successful');
+        sonnerToast.success('Signed in successfully!');
       }
       
     } catch (error: any) {
