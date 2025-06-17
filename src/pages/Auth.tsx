@@ -45,7 +45,7 @@ const Auth = () => {
       
       if (isSignUp) {
         await signUp(data.email, data.password);
-        toast.success('Account created! You can now sign in.');
+        toast.success('Account created! Please sign in now.');
         setIsSignUp(false);
         authForm.reset({ email: data.email, password: '' });
       } else {
@@ -60,11 +60,15 @@ const Auth = () => {
       let errorDescription = 'Please try again';
       
       if (error.message) {
-        if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
+        if (error.message.includes('create an account first')) {
+          errorMessage = 'Account needed';
+          errorDescription = 'Please create your admin account first';
+          setIsSignUp(true);
+        } else if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
           errorMessage = 'Invalid credentials';
-          errorDescription = 'Please check your email and password, or try creating an account first';
+          errorDescription = 'Please check your password, or try creating an account first';
         } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
-          errorMessage = 'Account already exists';
+          errorMessage = 'Account exists';
           errorDescription = 'Please sign in instead';
           setIsSignUp(false);
         } else if (error.message.includes('administrator')) {
@@ -134,7 +138,7 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="Enter your password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,13 +168,13 @@ const Auth = () => {
             >
               {isSignUp 
                 ? 'Already have an account? Sign in' 
-                : "Don't have an account? Create one"
+                : "Need to create account? Click here"
               }
             </Button>
           </div>
         </CardContent>
         <CardFooter className="justify-center text-sm text-muted-foreground">
-          This area is restricted to administrators only
+          Admin access for sudeepsnwr8@gmail.com only
         </CardFooter>
       </Card>
     </div>
