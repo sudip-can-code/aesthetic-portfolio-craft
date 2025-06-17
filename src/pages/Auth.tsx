@@ -34,7 +34,7 @@ const Auth = () => {
   const authForm = useForm<AuthFormValues>({
     resolver: zodResolver(authSchema),
     defaultValues: {
-      email: 'sudeepsnwr8@gmail.com',
+      email: 'saronsun88@gmail.com',
       password: '',
     },
   });
@@ -60,13 +60,10 @@ const Auth = () => {
       let errorDescription = 'Please try again';
       
       if (error.message) {
-        if (error.message.includes('create an account first')) {
-          errorMessage = 'Account needed';
-          errorDescription = 'Please create your admin account first';
-          setIsSignUp(true);
-        } else if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
+        if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
           errorMessage = 'Invalid credentials';
           errorDescription = 'Please check your password, or try creating an account first';
+          setIsSignUp(true);
         } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
           errorMessage = 'Account exists';
           errorDescription = 'Please sign in instead';
@@ -122,7 +119,7 @@ const Auth = () => {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="sudeepsnwr8@gmail.com" 
+                        placeholder="saronsun88@gmail.com" 
                         {...field} 
                         disabled={true}
                       />
@@ -162,7 +159,7 @@ const Auth = () => {
               variant="link" 
               onClick={() => {
                 setIsSignUp(!isSignUp);
-                authForm.reset({ email: 'sudeepsnwr8@gmail.com', password: '' });
+                authForm.reset({ email: 'saronsun88@gmail.com', password: '' });
               }}
               className="text-sm"
             >
@@ -174,7 +171,7 @@ const Auth = () => {
           </div>
         </CardContent>
         <CardFooter className="justify-center text-sm text-muted-foreground">
-          Admin access for sudeepsnwr8@gmail.com only
+          Admin access for saronsun88@gmail.com only
         </CardFooter>
       </Card>
     </div>

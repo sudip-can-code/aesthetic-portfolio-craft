@@ -22,8 +22,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Your specific admin email
-  const ADMIN_EMAIL = 'sudeepsnwr8@gmail.com';
+  // Updated admin email
+  const ADMIN_EMAIL = 'saronsun88@gmail.com';
 
   useEffect(() => {
     // Get initial session
@@ -87,14 +87,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('Only the administrator email can create an account');
       }
       
-      // Try to delete any existing user first
-      try {
-        await supabase.auth.admin.deleteUser(ADMIN_EMAIL);
-        console.log('Cleaned up existing user');
-      } catch (cleanupError) {
-        console.log('No existing user to cleanup or cleanup failed:', cleanupError);
-      }
-      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -136,15 +128,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('Sign-in error:', error);
-        
-        // If it's a database error, try to create the account instead
-        if (error.message.includes('Database error') || error.message.includes('Invalid login credentials')) {
-          sonnerToast.error('Please try creating an account first', {
-            description: 'It looks like your account needs to be set up'
-          });
-          throw new Error('Please create an account first');
-        }
-        
         throw error;
       }
       
