@@ -12,7 +12,7 @@ type Project = {
   video_url?: string;
 };
 
-const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'COMMERCIAL', 'SHORT', 'MOTION GRAPHICS', 'THUMBNAIL', 'LOGO', 'BOOK DESIGN', 'CINEMATIC', 'YOUTUBE VIDEO'];
+const CATEGORIES = ['ALL', 'CORPORATE', 'COMMERCIAL', 'SHORT', 'MOTION GRAPHICS', 'THUMBNAIL', 'DESIGN', 'CINEMATIC', 'YOUTUBE VIDEO'];
 
 const getYouTubeThumbnail = (url: string) => {
   if (url.includes('youtube.com/watch?v=')) {
