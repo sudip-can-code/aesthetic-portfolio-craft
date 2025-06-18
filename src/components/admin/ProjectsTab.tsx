@@ -1,4 +1,3 @@
-
 import { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +30,7 @@ const ProjectsTab = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const categories = ["CORPORATE", "DOCUMENTARY", "WEDDING", "MUSIC", "COMMERCIAL", "EVENT", "SHORT"];
+  const categories = ["CORPORATE", "DOCUMENTARY", "WEDDING", "MUSIC", "COMMERCIAL", "EVENT", "SHORT", "MOTION GRAPHICS", "VIDEO", "THUMBNAIL", "LOGO", "BOOK DESIGN"];
 
   useEffect(() => {
     fetchProjects();

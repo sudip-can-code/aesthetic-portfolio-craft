@@ -13,7 +13,19 @@ type Project = {
   video_url?: string;
 };
 
-const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'WEDDING', 'MUSIC', 'COMMERCIAL', 'EVENT', 'SHORT'];
+const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'WEDDING', 'MUSIC', 'COMMERCIAL', 'EVENT', 'SHORT', 'MOTION GRAPHICS', 'VIDEO', 'THUMBNAIL', 'LOGO', 'BOOK DESIGN'];
+
+const getYouTubeThumbnail = (url: string) => {
+  if (url.includes('youtube.com/watch?v=')) {
+    const videoId = url.split('v=')[1].split('&')[0];
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  }
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1].split('?')[0];
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  }
+  return null;
+};
 
 const ProjectCard = ({ project, index, onVideoPlay, onExternalLink }: { 
   project: Project; 
@@ -64,6 +76,10 @@ const ProjectCard = ({ project, index, onVideoPlay, onExternalLink }: {
       }
     }
   };
+
+  // Use YouTube thumbnail if available, otherwise use uploaded image
+  const thumbnailUrl = project.video_url ? getYouTubeThumbnail(project.video_url) : null;
+  const displayImage = thumbnailUrl || project.image_url || '/placeholder.svg';
   
   return (
     <div 
@@ -77,7 +93,7 @@ const ProjectCard = ({ project, index, onVideoPlay, onExternalLink }: {
     >
       <div className="absolute inset-0">
         <img
-          src={project.image_url || '/placeholder.svg'}
+          src={displayImage}
           alt={project.title}
           className="w-full h-full object-cover"
         />

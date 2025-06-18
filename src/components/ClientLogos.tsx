@@ -1,23 +1,12 @@
 
 import { useEffect, useRef, useState } from "react";
-
-const CLIENT_LOGOS = [
-  { id: 1, name: "Adobe", logo: "/placeholder.svg" },
-  { id: 2, name: "Microsoft", logo: "/placeholder.svg" },
-  { id: 3, name: "Apple", logo: "/placeholder.svg" },
-  { id: 4, name: "Google", logo: "/placeholder.svg" },
-  { id: 5, name: "Meta", logo: "/placeholder.svg" },
-  { id: 6, name: "Netflix", logo: "/placeholder.svg" },
-  { id: 7, name: "IBM", logo: "/placeholder.svg" },
-  { id: 8, name: "Tesla", logo: "/placeholder.svg" },
-  { id: 9, name: "Oracle", logo: "/placeholder.svg" },
-  { id: 10, name: "Intel", logo: "/placeholder.svg" },
-];
+import { useRealtimeClientLogos } from "@/hooks/useRealtimeClientLogos";
 
 const ClientLogos = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { clientLogos, loading } = useRealtimeClientLogos();
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,7 +31,7 @@ const ClientLogos = () => {
   
   useEffect(() => {
     const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
+    if (!scrollContainer || clientLogos.length === 0) return;
     
     let animationId: number;
     let scrollPos = 0;
@@ -68,7 +57,33 @@ const ClientLogos = () => {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [clientLogos]);
+
+  if (loading) {
+    return (
+      <section ref={sectionRef} className="py-16 bg-secondary/20 overflow-hidden">
+        <div className="container mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Worked with</h2>
+          <div className="flex justify-center items-center h-16">
+            <p>Loading client logos...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (clientLogos.length === 0) {
+    return (
+      <section ref={sectionRef} className="py-16 bg-secondary/20 overflow-hidden">
+        <div className="container mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Worked with</h2>
+          <div className="flex justify-center items-center h-16">
+            <p className="text-muted-foreground">No client logos available.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section ref={sectionRef} className="py-16 bg-secondary/20 overflow-hidden">
@@ -87,10 +102,10 @@ const ClientLogos = () => {
             >
               {/* First set of logos */}
               <div className="flex">
-                {CLIENT_LOGOS.map((client) => (
+                {clientLogos.map((client) => (
                   <div key={client.id} className="flex items-center justify-center min-w-[150px] md:min-w-[200px] px-4 py-6">
                     <img
-                      src={client.logo}
+                      src={client.logo_url}
                       alt={`${client.name} logo`}
                       className="h-8 md:h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-300"
                     />
@@ -100,10 +115,10 @@ const ClientLogos = () => {
               
               {/* Duplicate set for seamless scrolling */}
               <div className="flex">
-                {CLIENT_LOGOS.map((client) => (
+                {clientLogos.map((client) => (
                   <div key={`dup-${client.id}`} className="flex items-center justify-center min-w-[150px] md:min-w-[200px] px-4 py-6">
                     <img
-                      src={client.logo}
+                      src={client.logo_url}
                       alt={`${client.name} logo`}
                       className="h-8 md:h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-300"
                     />
