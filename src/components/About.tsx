@@ -15,73 +15,50 @@ const About = () => {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="flex justify-center">
-            <div className="w-64 h-64 md:w-80 md:h-80 overflow-hidden">
+            <div className="relative w-80 h-80 md:w-96 md:h-96">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl"></div>
               <img 
                 src="/lovable-uploads/1021feb9-789c-49b6-8094-424f26c9afb3.png" 
                 alt="About Me Portrait" 
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover rounded-2xl shadow-2xl"
               />
             </div>
           </div>
           
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold mb-6">ABOUT ME</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              ABOUT ME
+            </h2>
             
-            <p className="text-lg font-medium mb-2">HI, I'M YOUR NAME</p>
+            <div className="space-y-4">
+              <p className="text-xl font-semibold text-primary">HI, I'M YOUR NAME</p>
+              
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                I'M A NEW CREATIVE VIDEO EDITOR WITH A PASSION FOR VISUAL STORYTELLING.
+                SPECIALIZED IN CREATING ENGAGING CONTENT ACROSS VARIOUS PLATFORMS, I BRING
+                VISIONS TO LIFE THROUGH EFFECTS, EDITS, AND COMPELLING VISUAL STORIES.
+              </p>
+            </div>
             
-            <p className="text-muted-foreground">
-              I'M A NEW CREATIVE VIDEO EDITOR WITH A PASSION FOR VISUAL STORYTELLING.
-              SPECIALIZED IN CREATING ENGAGING CONTENT ACROSS VARIOUS PLATFORMS, I BRING
-              VISIONS TO LIFE THROUGH EFFECTS, EDITS, AND COMPELLING VISUAL STORIES.
-            </p>
-            
-            <div className="mt-8">
-              <p className="text-sm uppercase tracking-wider font-semibold mb-4">I USE THE SOFTWARE</p>
-              <div className="flex flex-wrap gap-4">
+            <div className="mt-12">
+              <p className="text-sm uppercase tracking-wider font-semibold mb-6 text-primary">
+                I USE THE SOFTWARE
+              </p>
+              <div className="flex flex-wrap gap-6">
                 {SOFTWARE_ICONS.map((software, index) => (
-                  <div key={index} className="w-8 h-8 grayscale hover:grayscale-0 transition-all">
+                  <div 
+                    key={index} 
+                    className="w-12 h-12 grayscale hover:grayscale-0 transition-all duration-300 hover:scale-110"
+                  >
                     <img 
                       src={software.icon} 
                       alt={software.name} 
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain filter drop-shadow-lg"
                       title={software.name}
                     />
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-24">
-          <h3 className="text-xl font-medium text-center mb-12">COMPANIES I'VE WORKED WITH</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((col) => (
-              <div key={col} className="border border-border rounded-md p-6">
-                <ul className="space-y-2">
-                  {[1, 2, 3, 4, 5].map((row) => (
-                    <li key={row} className="text-sm text-muted-foreground">
-                      {`Company Name (Project ${col}-${row})`}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-16 flex justify-center">
-            <div className="flex flex-wrap justify-center gap-6">
-              {SOFTWARE_ICONS.map((software, index) => (
-                <div key={index} className="w-10 h-10 grayscale hover:grayscale-0 transition-all">
-                  <img 
-                    src={software.icon} 
-                    alt={software.name} 
-                    className="w-full h-full object-contain"
-                    title={software.name}
-                  />
-                </div>
-              ))}
             </div>
           </div>
         </div>

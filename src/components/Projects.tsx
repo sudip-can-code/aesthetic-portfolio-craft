@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ type Project = {
   video_url?: string;
 };
 
-const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'WEDDING', 'MUSIC', 'COMMERCIAL', 'EVENT', 'SHORT', 'MOTION GRAPHICS', 'VIDEO', 'THUMBNAIL', 'LOGO', 'BOOK DESIGN'];
+const CATEGORIES = ['ALL', 'CORPORATE', 'DOCUMENTARY', 'COMMERCIAL', 'SHORT', 'MOTION GRAPHICS', 'THUMBNAIL', 'LOGO', 'BOOK DESIGN', 'CINEMATIC', 'YOUTUBE VIDEO'];
 
 const getYouTubeThumbnail = (url: string) => {
   if (url.includes('youtube.com/watch?v=')) {
@@ -241,13 +240,6 @@ const Projects = () => {
     <>
       <section id="projects" ref={sectionRef} className="section bg-background">
         <div className="container mx-auto">
-          <div className={`mb-12 text-center transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-            <h2 className="text-3xl font-bold relative inline-block">
-              Projects
-              <span className="absolute -bottom-2 left-0 w-full h-1 bg-primary scale-x-100 origin-left transition-transform"></span>
-            </h2>
-          </div>
-          
           <div className="grid grid-cols-1 gap-12">
             {loading ? (
               <div className="flex justify-center items-center h-32">

@@ -30,7 +30,7 @@ const ProjectsTab = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const categories = ["CORPORATE", "DOCUMENTARY", "WEDDING", "MUSIC", "COMMERCIAL", "EVENT", "SHORT", "MOTION GRAPHICS", "VIDEO", "THUMBNAIL", "LOGO", "BOOK DESIGN"];
+  const categories = ["CORPORATE", "DOCUMENTARY", "COMMERCIAL", "SHORT", "MOTION GRAPHICS", "THUMBNAIL", "LOGO", "BOOK DESIGN", "CINEMATIC", "YOUTUBE VIDEO"];
 
   useEffect(() => {
     fetchProjects();
