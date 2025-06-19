@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="border-t border-border pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
-              <h3 className="font-bold text-lg">Your Name</h3>
+              <h3 className="font-bold text-lg">Sudip Sunuwar</h3>
               <p className="text-sm text-muted-foreground">Video Editor & Graphic Designer</p>
             </div>
             
@@ -32,16 +32,6 @@ const Footer = () => {
             
             <div className="text-sm text-muted-foreground">
               © {currentYear} All rights reserved
-            </div>
-          </div>
-          
-          <div className="mt-6 text-center">
-            <div className="flex justify-center space-x-4 text-xs text-muted-foreground">
-              <a href="#" className="hover:underline">Privacy Policy</a>
-              <span>|</span>
-              <a href="#" className="hover:underline">Terms of Service</a>
-              <span>|</span>
-              <a href="#" className="hover:underline">Sitemap</a>
             </div>
           </div>
         </div>

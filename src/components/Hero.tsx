@@ -1,6 +1,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import TypingAnimation from "./TypingAnimation";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -32,14 +33,15 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Profile Picture - Center */}
+          {/* Profile Picture with Typing Animation - Center */}
           <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'} flex justify-center`}>
-            <div className="w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto">
+            <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto">
               <img 
                 src="/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png" 
                 alt="Portfolio Portrait" 
                 className="w-full h-full object-cover object-center grayscale"
               />
+              <TypingAnimation />
             </div>
           </div>
 
