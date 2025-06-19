@@ -1,8 +1,9 @@
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import TypingAnimation from "./TypingAnimation";
+import { Button } from "./ui/button";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -22,6 +23,10 @@ const Hero = () => {
     }
   };
 
+  const handleDownloadCV = () => {
+    window.open('https://drive.google.com/drive/folders/1oiS7SySJeBGRDFnrAB-WXxL_1EWrNOJt?usp=sharing', '_blank');
+  };
+
   return (
     <section id="home" className="min-h-screen flex items-center justify-center pt-16 relative">
       {/* Large Typing Animation Background */}
@@ -32,19 +37,19 @@ const Hero = () => {
       </div>
 
       <div className="container mx-auto flex flex-col items-center relative z-10">
-        {/* Project Experience - Left side */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center w-full max-w-5xl mb-8">
-          <div className={`space-y-4 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0 translate-y-10'}`}>
+        {/* Recent Role/Position and Since 2020 sections - positioned at head level */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start w-full max-w-5xl mb-8">
+          <div className={`space-y-4 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0 translate-y-10'} mt-16`}>
             <div className="mb-6">
-              <p className="text-xs uppercase tracking-wider font-semibold mb-1">Project Experience</p>
-              <p className="text-sm">VIDEO EDITING</p>
-              <p className="text-sm">GRAPHICS DESIGNER</p>
+              <p className="text-xs uppercase tracking-wider font-semibold mb-1">Recent Role/Position:</p>
+              <p className="text-sm">Project Manager</p>
+              <p className="text-sm">Project Supervisor</p>
             </div>
           </div>
 
-          {/* Profile Picture - Center */}
+          {/* Profile Picture - Center with hover animation */}
           <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'} flex justify-center`}>
-            <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto">
+            <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto transition-transform duration-300 hover:scale-110 cursor-pointer">
               <img 
                 src={theme === 'dark' ? "/lovable-uploads/f238441a-c29f-4a57-9bb8-f436bbb07a1b.png" : "/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png"}
                 alt="Portfolio Portrait" 
@@ -53,11 +58,11 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Since 2020 - Right side */}
-          <div className={`space-y-4 text-right transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0 translate-y-10'}`}>
+          {/* Since 2020 - Right side positioned at head level */}
+          <div className={`space-y-4 text-right transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0 translate-y-10'} mt-16`}>
             <div className="mb-6">
               <p className="text-xs uppercase tracking-wider font-semibold mb-1">Since 2020</p>
-              <p className="text-sm">COMPLETED 1000+ PROJECT</p>
+              <p className="text-sm">COMPLETED 2500+ PROJECTS</p>
             </div>
           </div>
         </div>
@@ -65,6 +70,18 @@ const Hero = () => {
         {/* Name directly below profile picture - touching it */}
         <div className="text-center -mt-6">
           <h1 className="text-4xl md:text-5xl font-bold">Hi, I'm Sudip</h1>
+        </div>
+        
+        {/* Download CV Button with shining effect */}
+        <div className="mt-6 animate-fade-up">
+          <Button 
+            onClick={handleDownloadCV}
+            className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 group"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></span>
+            <Download className="mr-2 h-4 w-4" />
+            Download My CV
+          </Button>
         </div>
         
         <div className="mt-8 animate-fade-up">
