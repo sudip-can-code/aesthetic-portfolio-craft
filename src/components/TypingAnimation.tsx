@@ -48,13 +48,11 @@ const TypingAnimation = () => {
   }, [currentText, isDeleting, currentWordIndex, typingSpeed, words]);
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-      <div className="text-center">
-        <span className="text-2xl md:text-4xl font-bold text-primary/30 tracking-wider">
-          {currentText}
-          <span className="animate-pulse">|</span>
-        </span>
-      </div>
+    <div className="text-center">
+      <span className="text-6xl md:text-8xl lg:text-9xl font-bold text-primary/20 tracking-wider whitespace-nowrap">
+        {currentText}
+        <span className="animate-pulse">|</span>
+      </span>
     </div>
   );
 };

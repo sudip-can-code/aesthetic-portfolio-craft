@@ -1,10 +1,12 @@
 
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTheme } from "./ThemeProvider";
 import TypingAnimation from "./TypingAnimation";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     setIsVisible(true);
@@ -21,8 +23,15 @@ const Hero = () => {
   };
 
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center pt-16">
-      <div className="container mx-auto flex flex-col items-center">
+    <section id="home" className="min-h-screen flex items-center justify-center pt-16 relative">
+      {/* Large Typing Animation Background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+        <div className="text-center mt-16">
+          <TypingAnimation />
+        </div>
+      </div>
+
+      <div className="container mx-auto flex flex-col items-center relative z-10">
         {/* Project Experience - Left side */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center w-full max-w-5xl mb-8">
           <div className={`space-y-4 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0 translate-y-10'}`}>
@@ -33,15 +42,14 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Profile Picture with Typing Animation - Center */}
+          {/* Profile Picture - Center */}
           <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'} flex justify-center`}>
             <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto">
               <img 
-                src="/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png" 
+                src={theme === 'dark' ? "/lovable-uploads/f238441a-c29f-4a57-9bb8-f436bbb07a1b.png" : "/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png"}
                 alt="Portfolio Portrait" 
-                className="w-full h-full object-cover object-center grayscale"
+                className={`w-full h-full object-cover object-center ${theme === 'dark' ? 'grayscale' : 'grayscale'}`}
               />
-              <TypingAnimation />
             </div>
           </div>
 
