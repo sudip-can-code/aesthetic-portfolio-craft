@@ -70,18 +70,6 @@ const Navbar = () => {
             </li>
             <li>
               <a 
-                href="#about" 
-                className={`nav-link ${activeSection === 'about' ? 'active-nav-link' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection('about');
-                }}
-              >
-                About
-              </a>
-            </li>
-            <li>
-              <a 
                 href="#contact" 
                 className={`nav-link ${activeSection === 'contact' ? 'active-nav-link' : ''}`}
                 onClick={(e) => {

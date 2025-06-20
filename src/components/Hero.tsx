@@ -47,9 +47,9 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Profile Picture - Center with hover animation */}
+          {/* Profile Picture - Center with slower hover animation */}
           <div className={`relative animate-fade-in delay-300 duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'} flex justify-center`}>
-            <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto transition-transform duration-300 hover:scale-110 cursor-pointer">
+            <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px] overflow-hidden rounded-full mx-auto transition-transform duration-500 hover:scale-110 cursor-pointer">
               <img 
                 src={theme === 'dark' ? "/lovable-uploads/f238441a-c29f-4a57-9bb8-f436bbb07a1b.png" : "/lovable-uploads/5ed59e3a-ec61-4fe2-a1d9-fae8e0b50c95.png"}
                 alt="Portfolio Portrait" 
@@ -67,8 +67,8 @@ const Hero = () => {
           </div>
         </div>
         
-        {/* Name directly below profile picture - touching it */}
-        <div className="text-center -mt-6">
+        {/* Name directly below profile picture - with higher z-index */}
+        <div className="text-center -mt-6 relative z-20">
           <h1 className="text-4xl md:text-5xl font-bold">Hi, I'm Sudip</h1>
         </div>
         
@@ -84,13 +84,13 @@ const Hero = () => {
           </Button>
         </div>
         
+        {/* Just the animated down arrow without text */}
         <div className="mt-8 animate-fade-up">
           <button 
             onClick={scrollToProjects}
-            className="flex items-center text-sm uppercase tracking-widest">
-            Projects
-            <span className="ml-2 animate-bounce">
-              <ChevronDown size={16} />
+            className="flex items-center justify-center">
+            <span className="animate-bounce">
+              <ChevronDown size={24} />
             </span>
           </button>
         </div>
