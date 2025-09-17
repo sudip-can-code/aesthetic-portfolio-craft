@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
