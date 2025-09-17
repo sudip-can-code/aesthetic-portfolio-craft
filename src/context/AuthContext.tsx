@@ -63,7 +63,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           } else {
             setIsAdmin(false);
             sonnerToast.error('Access denied - Only admin can access');
-            await signOut();
+            // Don't call signOut here to prevent infinite loop
+            // The user will be redirected by useProtectedRoute
           }
         } else {
           setIsAdmin(false);
