@@ -8,6 +8,7 @@ type Project = {
   image_url: string;
   title: string;
   video_url?: string;
+  display_order: number;
 };
 
 export const useRealtimeProjects = () => {
@@ -19,7 +20,7 @@ export const useRealtimeProjects = () => {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('display_order', { ascending: true });
         
       if (error) {
         throw error;
