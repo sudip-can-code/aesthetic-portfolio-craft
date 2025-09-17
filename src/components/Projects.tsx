@@ -68,6 +68,7 @@ const ProjectCard = ({ project, index, onVideoPlay, onExternalLink }: {
       const isVideoUrl = project.video_url.includes('youtube.com') || 
                         project.video_url.includes('youtu.be') || 
                         project.video_url.includes('vimeo.com') ||
+                        project.video_url.includes('/shorts/') ||
                         project.video_url.includes('.mp4') ||
                         project.video_url.includes('.webm') ||
                         project.video_url.includes('.ogg');
@@ -112,6 +113,7 @@ const ProjectCard = ({ project, index, onVideoPlay, onExternalLink }: {
               {(project.video_url.includes('youtube.com') || 
                 project.video_url.includes('youtu.be') || 
                 project.video_url.includes('vimeo.com') ||
+                project.video_url.includes('/shorts/') ||
                 project.video_url.includes('.mp4') ||
                 project.video_url.includes('.webm') ||
                 project.video_url.includes('.ogg')) ? (
@@ -147,6 +149,11 @@ const VideoModal = ({ isOpen, onClose, videoUrl, title }: {
     }
     if (url.includes('youtu.be/')) {
       const videoId = url.split('youtu.be/')[1].split('?')[0];
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    }
+    // YouTube Shorts URL conversion
+    if (url.includes('youtube.com/shorts/') || url.includes('www.youtube.com/shorts/')) {
+      const videoId = url.split('/shorts/')[1].split('?')[0];
       return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
     }
     // Vimeo URL conversion
