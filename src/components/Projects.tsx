@@ -12,7 +12,7 @@ type Project = {
   video_url?: string;
 };
 
-const CATEGORIES = ['ALL', 'CORPORATE', 'COMMERCIAL', 'SHORT', 'MOTION GRAPHICS', 'THUMBNAIL', 'DESIGN', 'CINEMATIC', 'YOUTUBE VIDEO'];
+const CATEGORIES = ['ALL', 'CORPORATE', 'COMMERCIAL', 'REELS', 'MOTION GRAPHICS', 'THUMBNAIL', 'DESIGN', 'CINEMATIC', 'YOUTUBE VIDEO'];
 
 const getYouTubeThumbnail = (url: string) => {
   if (url.includes('youtube.com/watch?v=')) {
@@ -21,6 +21,10 @@ const getYouTubeThumbnail = (url: string) => {
   }
   if (url.includes('youtu.be/')) {
     const videoId = url.split('youtu.be/')[1].split('?')[0];
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  }
+  if (url.includes('youtube.com/shorts/') || url.includes('www.youtube.com/shorts/')) {
+    const videoId = url.split('/shorts/')[1].split('?')[0];
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
   return null;
@@ -83,7 +87,9 @@ const ProjectCard = ({ project, index, onVideoPlay, onExternalLink }: {
   return (
     <div 
       ref={cardRef}
-      className={`project-card bg-secondary/20 aspect-video transition-all duration-700 cursor-pointer relative ${
+      className={`project-card bg-secondary/20 ${
+        project.category === 'REELS' ? 'aspect-[9/16]' : 'aspect-video'
+      } transition-all duration-700 cursor-pointer relative ${
         isVisible 
           ? 'opacity-100 translate-y-0' 
           : 'opacity-0 translate-y-10'
