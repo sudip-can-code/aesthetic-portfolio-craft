@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
@@ -63,8 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           } else {
             setIsAdmin(false);
             sonnerToast.error('Access denied - Only admin can access');
-            // Don't call signOut here to prevent infinite loop
-            // The user will be redirected by useProtectedRoute
+            await signOut();
           }
         } else {
           setIsAdmin(false);

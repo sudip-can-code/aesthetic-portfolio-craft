@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
@@ -8,17 +9,14 @@ export const useProtectedRoute = () => {
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState(false);
   const [checkingPermission, setCheckingPermission] = useState(true);
-  const hasChecked = useRef(false);
 
   useEffect(() => {
-    // Prevent multiple checks
-    if (isLoading) return;
-    if (hasChecked.current) return;
-
     const checkPermission = async () => {
       try {
         setCheckingPermission(true);
-        hasChecked.current = true;
+        
+        // Wait for auth loading to complete
+        if (isLoading) return;
         
         console.log('Protected route check:', { user: user?.email, isAdmin });
         
@@ -32,7 +30,7 @@ export const useProtectedRoute = () => {
         }
         
         // Check if user is admin based on email
-        const ADMIN_EMAIL = 'saronsun88@gmail.com';
+        const ADMIN_EMAIL = 'sudeepsnwr8@gmail.com';
         if (user.email === ADMIN_EMAIL || isAdmin) {
           console.log('Admin access confirmed');
           setAuthorized(true);
@@ -53,14 +51,9 @@ export const useProtectedRoute = () => {
         setCheckingPermission(false);
       }
     };
-
+    
     checkPermission();
   }, [user, isLoading, isAdmin, navigate]);
-
-  // Reset check flag when user changes
-  useEffect(() => {
-    hasChecked.current = false;
-  }, [user?.email]);
 
   return { 
     isLoading: isLoading || checkingPermission, 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,27 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Edit, Plus, Trash, GripVertical } from 'lucide-react';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import {
-  CSS,
-} from '@dnd-kit/utilities';
-import SortableProjectRow from './SortableProjectRow';
+import { Edit, Plus, Trash } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -37,7 +17,6 @@ interface Project {
   category: string;
   image_url?: string;
   video_url?: string;
-  display_order: number;
 }
 
 const ProjectsTab = () => {
@@ -62,7 +41,7 @@ const ProjectsTab = () => {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setProjects(data || []);
@@ -118,7 +97,6 @@ const ProjectsTab = () => {
         category,
         image_url: imageUrl || undefined,
         video_url: videoUrl || undefined,
-        display_order: editingId ? undefined : projects.length + 1,
       };
 
       if (editingId) {
@@ -199,55 +177,6 @@ const ProjectsTab = () => {
     setIsDialogOpen(true);
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id) {
-      const oldIndex = projects.findIndex((project) => project.id === active.id);
-      const newIndex = projects.findIndex((project) => project.id === over?.id);
-
-      const newProjects = arrayMove(projects, oldIndex, newIndex);
-      setProjects(newProjects);
-
-      // Update display_order in database
-      try {
-        const updates = newProjects.map((project, index) => 
-          supabase
-            .from('projects')
-            .update({ display_order: index + 1 })
-            .eq('id', project.id)
-        );
-
-        await Promise.all(updates);
-        
-        toast({
-          title: "Success",
-          description: "Project order updated successfully.",
-        });
-      } catch (error) {
-        console.error('Error updating project order:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update project order.",
-          variant: "destructive",
-        });
-        // Revert the change
-        fetchProjects();
-      }
-    }
-  };
-    setEditingId(null);
-    setTitle('');
-    setCategory('');
-    setImageFile(null);
-    setVideoUrl('');
   const resetForm = () => {
     setEditingId(null);
     setTitle('');
@@ -351,37 +280,47 @@ const ProjectsTab = () => {
       
       {!loading && projects.length > 0 && (
         <div className="border rounded-md">
-          <DndContext 
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Image</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow key={project.id}>
+                  <TableCell>
+                    {project.image_url ? (
+                      <img 
+                        src={project.image_url} 
+                        alt={project.title} 
+                        className="h-12 w-20 object-cover rounded"
+                      />
+                    ) : (
+                      <div className="h-12 w-20 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>{project.title}</TableCell>
+                  <TableCell>{project.category}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(project)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(project.id)}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                <SortableContext 
-                  items={projects.map(p => p.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {projects.map((project) => (
-                    <SortableProjectRow
-                      key={project.id}
-                      project={project}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </SortableContext>
-              </TableBody>
-            </Table>
-          </DndContext>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

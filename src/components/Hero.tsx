@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from "react";
 import { ChevronDown, Download } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import TypingAnimation from "./TypingAnimation";
 import { Button } from "./ui/button";

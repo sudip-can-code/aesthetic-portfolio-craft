@@ -1,5 +1,4 @@
 
-import * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
@@ -17,37 +16,22 @@ export function ThemeProvider({
   children: React.ReactNode;
 }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Safely access localStorage and window
-    if (typeof window === 'undefined') {
-      return 'light';
+    const storedTheme = localStorage.getItem("theme") as Theme | null;
+    
+    if (storedTheme) {
+      return storedTheme;
     }
     
-    try {
-      const storedTheme = localStorage.getItem("theme") as Theme | null;
-      
-      if (storedTheme && (storedTheme === 'dark' || storedTheme === 'light')) {
-        return storedTheme;
-      }
-      
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    } catch (error) {
-      return 'light';
-    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    const root = window.document.documentElement;
     
-    try {
-      const root = window.document.documentElement;
-      
-      root.classList.remove("light", "dark");
-      root.classList.add(theme);
-      
-      localStorage.setItem("theme", theme);
-    } catch (error) {
-      console.error('Error setting theme:', error);
-    }
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const contextValue = {
