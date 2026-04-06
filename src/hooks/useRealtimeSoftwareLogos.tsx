@@ -7,7 +7,6 @@ interface SoftwareLogo {
   name: string;
   logo_url: string;
   created_at: string;
-  updated_at: string;
 }
 
 export const useRealtimeSoftwareLogos = () => {

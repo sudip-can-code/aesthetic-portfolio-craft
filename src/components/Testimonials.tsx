@@ -49,7 +49,7 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
 
 const Testimonials = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [autoplay, setAutoplay] = useState<NodeJS.Timeout | null>(null);
+  const [autoplay, setAutoplay] = useState<ReturnType<typeof setInterval> | null>(null);
   const { testimonials, loading } = useRealtimeTestimonials();
   
   useEffect(() => {

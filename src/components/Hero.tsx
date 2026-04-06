@@ -24,7 +24,7 @@ const Hero = () => {
   };
 
   const handleDownloadCV = () => {
-    window.open('https://drive.google.com/drive/folders/1oiS7SySJeBGRDFnrAB-WXxL_1EWrNOJt?usp=sharing', '_blank');
+    window.open('https://docs.google.com/document/d/17aOFpW7eFdSU3GDhAZWe7W8tXNBOu5pCytp0ZYM5Rro/edit?usp=sharing', '_blank');
   };
 
   return (
