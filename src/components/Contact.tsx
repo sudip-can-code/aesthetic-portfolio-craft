@@ -5,14 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Github, Linkedin, Instagram } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Contact = () => {
+  const { settings } = useSiteSettings();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
   });
+
+  const contactEmail = settings.contact_email || 'sudeepsnwr8@gmail.com';
+  const contactPhone = settings.contact_phone || '9840401157';
+  const contactLocation = settings.contact_location || 'Kathmandu, Nepal';
+  const socialLinks = settings.social_links || {};
+  const contactDescription = settings.about_description || 'Have a project in mind or want to discuss a collaboration? Feel free to reach out.';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -39,8 +47,7 @@ const Contact = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Get in Touch</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Have a project in mind or want to discuss a collaboration? Feel free to reach out.
-            I'm always interested in new projects and creative challenges.
+            {contactDescription}
           </p>
         </div>
 
@@ -58,7 +65,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="text-sm">sudeepsnwr8@gmail.com</p>
+                  <p className="text-sm">{contactEmail}</p>
                 </div>
               </div>
 
@@ -70,7 +77,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="text-sm">9840401157</p>
+                  <p className="text-sm">{contactPhone}</p>
                 </div>
               </div>
 
@@ -82,26 +89,31 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="text-sm">Kathmandu, Nepal</p>
+                  <p className="text-sm">{contactLocation}</p>
                 </div>
               </div>
 
               <div className="pt-6">
                 <h4 className="text-base font-semibold mb-3">Connect with me</h4>
                 <div className="flex space-x-4">
-                  <a href="https://github.com/sudip-can-code" target="_blank" rel="noopener noreferrer" 
-                     className="bg-muted p-2 rounded-full hover:bg-muted/80 transition-colors">
-                    <Github size={20} />
-                  </a>
-                  <a href="https://www.linkedin.com/feed/" target="_blank" rel="noopener noreferrer"
-                     className="bg-muted p-2 rounded-full hover:bg-muted/80 transition-colors">
-                    <Linkedin size={20} />
-                  </a>
-                  <a href="https://www.instagram.com/mr_jijicha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
-                     target="_blank" rel="noopener noreferrer"
-                     className="bg-muted p-2 rounded-full hover:bg-muted/80 transition-colors">
-                    <Instagram size={20} />
-                  </a>
+                  {socialLinks.github && (
+                    <a href={socialLinks.github} target="_blank" rel="noopener noreferrer" 
+                       className="bg-muted p-2 rounded-full hover:bg-muted/80 transition-colors">
+                      <Github size={20} />
+                    </a>
+                  )}
+                  {socialLinks.linkedin && (
+                    <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                       className="bg-muted p-2 rounded-full hover:bg-muted/80 transition-colors">
+                      <Linkedin size={20} />
+                    </a>
+                  )}
+                  {socialLinks.instagram && (
+                    <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer"
+                       className="bg-muted p-2 rounded-full hover:bg-muted/80 transition-colors">
+                      <Instagram size={20} />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
