@@ -14,7 +14,153 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_logos: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          category: string
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string | null
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          description: string
+          id: string
+          key: string
+          section: string
+          value: Json | null
+        }
+        Insert: {
+          description?: string
+          id?: string
+          key: string
+          section?: string
+          value?: Json | null
+        }
+        Update: {
+          description?: string
+          id?: string
+          key?: string
+          section?: string
+          value?: Json | null
+        }
+        Relationships: []
+      }
+      software_logos: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          company: string
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          position: string
+          text: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          position: string
+          text: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          position?: string
+          text?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
