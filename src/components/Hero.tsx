@@ -4,10 +4,15 @@ import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import TypingAnimation from "./TypingAnimation";
 import { Button } from "./ui/button";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
   const { theme } = useTheme();
+  const { settings } = useSiteSettings();
+
+  const cvUrl = settings.cv_url || 'https://docs.google.com/document/d/17aOFpW7eFdSU3GDhAZWe7W8tXNBOu5pCytp0ZYM5Rro/edit?usp=sharing';
+  const heroName = settings.hero_name || 'Sudip';
 
   useEffect(() => {
     setIsVisible(true);
@@ -24,7 +29,7 @@ const Hero = () => {
   };
 
   const handleDownloadCV = () => {
-    window.open('https://docs.google.com/document/d/17aOFpW7eFdSU3GDhAZWe7W8tXNBOu5pCytp0ZYM5Rro/edit?usp=sharing', '_blank');
+    window.open(cvUrl, '_blank');
   };
 
   return (
@@ -69,7 +74,7 @@ const Hero = () => {
         
         {/* Name directly below profile picture - with higher z-index */}
         <div className="text-center -mt-6 relative z-20">
-          <h1 className="text-4xl md:text-5xl font-bold">Hi, I'm Sudip</h1>
+          <h1 className="text-4xl md:text-5xl font-bold">Hi, I'm {heroName}</h1>
         </div>
         
         {/* Download CV Button with shining effect */}
