@@ -1,8 +1,8 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
+import { isAdminEmail } from '@/lib/admin';
 
 interface AuthContextProps {
   session: Session | null;
@@ -22,89 +22,86 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Updated admin email
-  const ADMIN_EMAIL = 'saronsun88@gmail.com';
-
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting initial session:', error);
-        } else {
-          setSession(initialSession);
-          setUser(initialSession?.user ?? null);
-          if (initialSession?.user?.email === ADMIN_EMAIL) {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-      } finally {
-        setIsLoading(false);
+    let isMounted = true;
+
+    const applySession = async (currentSession: Session | null) => {
+      if (!isMounted) return;
+
+      const currentUser = currentSession?.user ?? null;
+      const adminAccess = isAdminEmail(currentUser?.email);
+
+      setSession(currentSession);
+      setUser(currentUser);
+      setIsAdmin(adminAccess);
+      setIsLoading(false);
+
+      if (currentUser && !adminAccess) {
+        sonnerToast.error('Access denied - only your approved admin email can access this panel.');
+        await supabase.auth.signOut();
       }
     };
 
-    getInitialSession();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      void applySession(currentSession);
+    });
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log('Auth state changed:', event, currentSession?.user?.email);
-        
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user) {
-          if (currentSession.user.email === ADMIN_EMAIL) {
-            setIsAdmin(true);
-            sonnerToast.success('Welcome back, Administrator');
-          } else {
-            setIsAdmin(false);
-            sonnerToast.error('Access denied - Only admin can access');
-            await signOut();
-          }
-        } else {
-          setIsAdmin(false);
+    const getInitialSession = async () => {
+      try {
+        const {
+          data: { session: initialSession },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('Error getting initial session:', error);
+          return;
         }
-        
-        setIsLoading(false);
+
+        await applySession(initialSession);
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    );
-    
+    };
+
+    void getInitialSession();
+
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+
     try {
       setIsLoading(true);
-      console.log('Creating account for:', email);
-      
-      if (email !== ADMIN_EMAIL) {
-        throw new Error('Only the administrator email can create an account');
+
+      if (!isAdminEmail(normalizedEmail)) {
+        throw new Error('Only the approved administrator email can create an account');
       }
-      
+
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: normalizedEmail,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/admin`
-        }
+          emailRedirectTo: window.location.origin,
+        },
       });
-      
-      if (error) {
-        console.error('Sign-up error:', error);
-        throw error;
-      }
-      
+
+      if (error) throw error;
+
       if (data.user) {
         sonnerToast.success('Account created successfully! Please check your email to confirm.');
       }
-      
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in signUp:', error);
       throw error;
     } finally {
@@ -113,30 +110,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+
     try {
       setIsLoading(true);
-      console.log('Signing in:', email);
-      
-      if (email !== ADMIN_EMAIL) {
-        throw new Error('Only the administrator can sign in');
+
+      if (!isAdminEmail(normalizedEmail)) {
+        throw new Error('Only the approved administrator can sign in');
       }
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password,
       });
-      
-      if (error) {
-        console.error('Sign-in error:', error);
-        throw error;
-      }
-      
+
+      if (error) throw error;
+
       if (data?.user) {
-        console.log('Sign in successful');
         sonnerToast.success('Signed in successfully!');
       }
-      
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in signIn:', error);
       throw error;
     } finally {
@@ -149,7 +142,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       setSession(null);
       setUser(null);
       setIsAdmin(false);
