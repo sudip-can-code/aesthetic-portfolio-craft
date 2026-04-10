@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -11,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { PRIMARY_ADMIN_EMAIL } from '@/lib/admin';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -24,7 +24,7 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (user) {
       navigate('/admin');
@@ -34,7 +34,7 @@ const Auth = () => {
   const authForm = useForm<AuthFormValues>({
     resolver: zodResolver(authSchema),
     defaultValues: {
-      email: 'saronsun88@gmail.com',
+      email: PRIMARY_ADMIN_EMAIL,
       password: '',
     },
   });
@@ -42,43 +42,41 @@ const Auth = () => {
   const onSubmit = async (data: AuthFormValues) => {
     try {
       setIsSubmitting(true);
-      
+
       if (isSignUp) {
         await signUp(data.email, data.password);
-        toast.success('Account created! Please sign in now.');
+        toast.success('Account created! Please confirm your email, then sign in.');
         setIsSignUp(false);
         authForm.reset({ email: data.email, password: '' });
       } else {
         await signIn(data.email, data.password);
         navigate('/admin');
       }
-      
     } catch (error: any) {
       console.error('Auth error:', error);
-      
+
       let errorMessage = 'Authentication failed';
       let errorDescription = 'Please try again';
-      
+
       if (error.message) {
         if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
           errorMessage = 'Invalid credentials';
-          errorDescription = 'Please check your password, or try creating an account first';
-          setIsSignUp(true);
+          errorDescription = 'Check your password, or create the admin account first if it does not exist yet.';
         } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
           errorMessage = 'Account exists';
-          errorDescription = 'Please sign in instead';
+          errorDescription = 'Please sign in instead.';
           setIsSignUp(false);
         } else if (error.message.includes('administrator')) {
           errorMessage = 'Access denied';
-          errorDescription = 'Only the administrator can access this panel';
+          errorDescription = 'Only your approved admin Gmail can access this panel.';
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = 'Email not confirmed';
-          errorDescription = 'Please check your email and click the confirmation link';
+          errorDescription = 'Please open the confirmation email, then try signing in again.';
         } else {
           errorDescription = error.message;
         }
       }
-      
+
       toast.error(errorMessage, { description: errorDescription });
     } finally {
       setIsSubmitting(false);
@@ -97,15 +95,14 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="mb-4 flex justify-center">
             <Shield className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl">Admin Access</CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? 'Create your administrator account' 
-              : 'Sign in with your administrator credentials'
-            }
+            {isSignUp
+              ? 'Create your administrator account'
+              : 'Sign in with your administrator credentials'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -118,11 +115,7 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="saronsun88@gmail.com" 
-                        {...field} 
-                        disabled={true}
-                      />
+                      <Input placeholder="Enter your admin Gmail" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -147,31 +140,30 @@ const Auth = () => {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {isSignUp ? 'Creating account...' : 'Signing in...'}
                   </>
+                ) : isSignUp ? (
+                  'Create Admin Account'
                 ) : (
-                  isSignUp ? 'Create Admin Account' : 'Sign In'
+                  'Sign In'
                 )}
               </Button>
             </form>
           </Form>
-          
+
           <div className="mt-4 text-center">
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               onClick={() => {
                 setIsSignUp(!isSignUp);
-                authForm.reset({ email: 'saronsun88@gmail.com', password: '' });
+                authForm.reset({ email: authForm.getValues('email') || PRIMARY_ADMIN_EMAIL, password: '' });
               }}
               className="text-sm"
             >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : "Need to create account? Click here"
-              }
+              {isSignUp ? 'Already have an account? Sign in' : 'Need to create account? Click here'}
             </Button>
           </div>
         </CardContent>
-        <CardFooter className="justify-center text-sm text-muted-foreground">
-          Admin access for saronsun88@gmail.com only
+        <CardFooter className="justify-center text-center text-sm text-muted-foreground">
+          Admin access is limited to your approved Gmail account.
         </CardFooter>
       </Card>
     </div>
