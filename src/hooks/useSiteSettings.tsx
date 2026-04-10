@@ -36,8 +36,9 @@ export const useSiteSettings = () => {
   useEffect(() => {
     fetchSettings();
 
+    const channelName = `site-settings-changes-${Date.now()}`;
     const channel = supabase
-      .channel('site-settings-changes')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, () => {
         fetchSettings();
       })
