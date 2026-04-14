@@ -1,8 +1,8 @@
-export const ADMIN_EMAILS = ['sudeepsnwr8@gmail.com', 'saronsun88@gmail.com'];
-
-export const PRIMARY_ADMIN_EMAIL = ADMIN_EMAILS[0];
+export const ADMIN_USERNAME = 'admin';
+export const ADMIN_PASSWORD = 'admin123';
+export const ADMIN_EMAIL = 'admin@portfolio.local';
 
 export const isAdminEmail = (email?: string | null) => {
   if (!email) return false;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
+  return email.trim().toLowerCase() === ADMIN_EMAIL;
 };
