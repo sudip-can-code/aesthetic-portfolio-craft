@@ -35,6 +35,83 @@ export type Database = {
         }
         Relationships: []
       }
+      ping_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          project_id: string
+          response_time_ms: number | null
+          status_code: number | null
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          project_id: string
+          response_time_ms?: number | null
+          status_code?: number | null
+          success?: boolean
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          project_id?: string
+          response_time_ms?: number | null
+          status_code?: number | null
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ping_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "pinged_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pinged_projects: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          interval_minutes: number
+          last_error: string | null
+          last_pinged_at: string | null
+          last_status_code: number | null
+          name: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          interval_minutes?: number
+          last_error?: string | null
+          last_pinged_at?: string | null
+          last_status_code?: number | null
+          name: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          interval_minutes?: number
+          last_error?: string | null
+          last_pinged_at?: string | null
+          last_status_code?: number | null
+          name?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
