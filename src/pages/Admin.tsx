@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, LogOut, Settings, FileText, Users, Image, Monitor } from 'lucide-react';
+import { ArrowLeft, LogOut, Settings, FileText, Users, Image, Monitor, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +15,7 @@ import ProfileTab from '@/components/admin/ProfileTab';
 import SiteSettingsTab from '@/components/admin/SiteSettingsTab';
 import ContentManagerTab from '@/components/admin/ContentManagerTab';
 import SoftwareLogosTab from '@/components/admin/SoftwareLogosTab';
+import PingerTab from '@/components/admin/PingerTab';
 
 const Admin = () => {
   const { isLoading, isAdmin } = useProtectedRoute();
@@ -68,7 +69,7 @@ const Admin = () => {
       
       <main className="container py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
             <TabsTrigger value="site-settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Website</span>
@@ -96,6 +97,10 @@ const Admin = () => {
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="pinger" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Pinger</span>
             </TabsTrigger>
           </TabsList>
           
@@ -127,6 +132,10 @@ const Admin = () => {
           
           <TabsContent value="profile" className="space-y-4">
             <ProfileTab />
+          </TabsContent>
+
+          <TabsContent value="pinger" className="space-y-4">
+            <PingerTab />
           </TabsContent>
         </Tabs>
       </main>
